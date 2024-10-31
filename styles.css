@@ -30,20 +30,7 @@ body {
     width: 100%;
 }
 
-/* 
-html, body {
-    scroll-behavior: smooth;
-    overflow-x: hidden; 
-    width: 100%; 
 
-body {
-    font-family: "Libre Caslon Text", serif;
-    line-height: 1.6;
-    color: var(--tyrian-purple);
-    background-color: var(--almond);
-    overflow-x: hidden; /* Prevent horizontal scrolling 
-} 
-    */
 
 nav {
     position: fixed;
@@ -66,6 +53,9 @@ nav {
     text-decoration: none;
 }
 
+.logo:hover {
+    color: #b2678b
+}
 
 
 .nav-links {
@@ -80,7 +70,7 @@ nav {
     transition: color 0.3s ease;
 }
 
-.nav-link:hover, .logo:hover {
+.nav-link:hover {
     color: #b2678b;
 }
 
@@ -95,6 +85,16 @@ nav {
     text-align: center;
     color: var(--almond);
 }
+
+
+
+.hero h1 {
+    font-size: 3rem; /* Increase or decrease as needed */
+    font-weight: bold; /* Optional for added emphasis */
+    margin-bottom: 1rem; /* Optional to create space between elements */
+}
+
+
 
 .bengali-quote {
     font-family: "Tiro Bangla", serif;
