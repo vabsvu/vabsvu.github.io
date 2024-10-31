@@ -1,0 +1,175 @@
+/*  styles.css */
+:root {
+    --tyrian-purple: #460b2f;
+    --carmine: #9a031e;
+    --spanish-orange: #e36414;
+    --satin-sheen-gold: #bf9b30;
+    --almond: #eae0d5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Libre Caslon Text", serif;
+    line-height: 1.6;
+    color: var(--tyrian-purple);
+    background-color: var(--almond);
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: "Libre Caslon Text", serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--tyrian-purple);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.logo:hover {
+    color: var(--spanish-orange);
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--tyrian-purple);
+    font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--spanish-orange);
+}
+
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--tyrian-purple), var(--carmine));
+    padding: 2rem;
+    text-align: center;
+    color: var(--almond);
+}
+
+.bengali-quote {
+    font-family: "Tiro Bangla", serif;
+    font-size: 2rem;
+    margin: 2rem 0;
+    color: var(--almond);
+}
+
+.quote-translation {
+    font-family: "Libre Caslon Text", serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--satin-sheen-gold);
+}
+
+.section {
+    padding: 5rem 2rem;
+}
+
+.events {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.events-column {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.events-column h2 {
+    color: var(--carmine);
+    margin-bottom: 1.5rem;
+}
+
+.upcoming-events {
+    background: var(--spanish-orange);
+    height: 400px;
+    border-radius: 10px;
+}
+
+.donate-section {
+    background: linear-gradient(45deg, var(--tyrian-purple), var(--carmine));
+    text-align: center;
+    color: var(--almond);
+}
+
+.charities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+}
+
+.charity-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    color: var(--tyrian-purple);
+}
+
+.charity-card h3 {
+    color: var(--carmine);
+    margin-bottom: 1rem;
+}
+
+.button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: var(--spanish-orange);
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    margin-top: 1rem;
+}
+
+.button:hover {
+    background: var(--satin-sheen-gold);
+}
+
+@media (max-width: 768px) {
+    .events {
+        grid-template-columns: 1fr;
+    }
+    
+    .bengali-quote {
+        font-size: 1.5rem;
+    }
+}
