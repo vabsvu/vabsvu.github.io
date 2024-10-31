@@ -13,8 +13,9 @@
     box-sizing: border-box;
 }
 
-html {
+html, body {
     scroll-behavior: smooth;
+    width: 100%;
 }
 
 body {
@@ -86,9 +87,8 @@ nav {
 }
 
 .events {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -96,6 +96,7 @@ nav {
 .events-column {
     background: white;
     padding: 2rem;
+    margin-bottom: 1.5rem;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -108,7 +109,7 @@ nav {
 
 .charities {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr;
     gap: 2rem;
     max-width: 1200px;
     margin: 2rem auto;
@@ -172,7 +173,7 @@ nav {
         font-size: 1.5rem;
     }
 
-    .events {
+    .events, .charities {
         grid-template-columns: 1fr;
     }
 }
