@@ -1,4 +1,5 @@
 /* styles.css */
+
 :root {
     --tyrian-purple: #460b2f;
     --carmine: #9a031e;
@@ -13,17 +14,36 @@
     box-sizing: border-box;
 }
 
-html, body {
+html {
     scroll-behavior: smooth;
+    /* overflow: hidden; Prevents scroll on html to keep only one scroll bar */
     width: 100%;
 }
+
+body {
+    overflow-y: scroll; /* Only allow vertical scroll on the body */
+    overflow-x: hidden; /* Ensure no horizontal scroll */
+    font-family: "Libre Caslon Text", serif;
+    line-height: 1.6;
+    color: var(--tyrian-purple);
+    background-color: var(--almond);
+    width: 100%;
+}
+
+/* 
+html, body {
+    scroll-behavior: smooth;
+    overflow-x: hidden; 
+    width: 100%; 
 
 body {
     font-family: "Libre Caslon Text", serif;
     line-height: 1.6;
     color: var(--tyrian-purple);
     background-color: var(--almond);
-}
+    overflow-x: hidden; /* Prevent horizontal scrolling 
+} 
+    */
 
 nav {
     position: fixed;
@@ -46,6 +66,8 @@ nav {
     text-decoration: none;
 }
 
+
+
 .nav-links {
     display: flex;
     gap: 2rem;
@@ -55,6 +77,11 @@ nav {
     text-decoration: none;
     color: var(--tyrian-purple);
     font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover, .logo:hover {
+    color: #b2678b;
 }
 
 .hero {
@@ -84,19 +111,27 @@ nav {
 
 .section {
     padding: 5rem 2rem;
+    text-align: center; /* Center align for mobile */
 }
 
 .events {
     display: flex;
-    flex-direction: column;
-    max-width: 1200px;
-    margin: 0 auto;
+    flex-direction: column; /* Stack items in a single column for mobile */
+    gap: 2rem;
+    max-width: 600px; /* Center content for both desktop and mobile */
+    margin: 0 auto; /* Center the entire section */
+}
+
+#instagram-embed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
 
 .events-column {
     background: white;
     padding: 2rem;
-    margin-bottom: 1.5rem;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -108,11 +143,11 @@ nav {
 }
 
 .charities {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column; /* Stack charities vertically on mobile */
     gap: 2rem;
-    max-width: 1200px;
-    margin: 2rem auto;
+    max-width: 600px; /* Center align content */
+    margin: 0 auto; /* Center the entire section */
 }
 
 .charity-card {
@@ -173,7 +208,8 @@ nav {
         font-size: 1.5rem;
     }
 
-    .events, .charities {
-        grid-template-columns: 1fr;
+    .events {
+        grid-template-columns: 1fr; /* Stack events in one column */
+        gap: 1rem;
     }
 }
