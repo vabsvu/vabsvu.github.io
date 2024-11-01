@@ -258,21 +258,85 @@ nav {
     margin: 1rem 0;
     color: var(--satin-sheen-gold);
 }
-
+/* Define button styling */
 .signup-button {
     display: inline-block;
-    background: var(--spanish-orange);
-    color: white;
+    background: var(--almond); /* Complementary non-hover color */
+    color: var(--tyrian-purple); /* Text color that complements the background */
     padding: 1rem 2rem;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
     margin: 1.5rem 0;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, background 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+:root {
+    --tyrian-purple: #460b2f;
+    --carmine: #9a031e;
+    --spanish-orange: #e36414;
+    --satin-sheen-gold: #bf9b30;
+    --almond: #eae0d5;
+}
+
+/* Button style */
+.signup-button {
+    display: inline-block;
+    background: var(--tyrian-purple); /* Initial background color for better blend */
+    color: var(--almond); /* Text color before hover */
+    padding: 1rem 2rem;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    margin: 1.5rem 0;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .signup-button:hover {
+    background: linear-gradient(45deg, var(--tyrian-purple),  var(--carmine));
+    color: var(--almond); /* Ensure text remains almond on hover */
     transform: scale(1.05);
+    animation-delay: 10s; /* Delays hover effect slightly */
+}
+
+/* Sparkle animation effect */
+.signup-button:hover::before {
+    content: '';
+    position: absolute;
+    top: -50%; /* Start above the button */
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%);
+    opacity: 0.7;
+    transform: rotate(30deg);
+    animation: sparkle 1.8s linear infinite;
+    pointer-events: none; /* Prevent interaction */
+}
+
+/* Sparkle keyframes */
+@keyframes sparkle {
+    0% {
+        top: -50%;
+        left: -50%;
+        transform: rotate(30deg) scale(0.4);
+        opacity: 0;
+    }
+    50% {
+        top: 50%;
+        left: 50%;
+        transform: rotate(30deg) scale(1.4);
+        opacity: 1;
+    }
+    100% {
+        top: 150%;
+        left: 150%;
+        transform: rotate(30deg) scale(0.4);
+        opacity: 0;
+    }
 }
 
 .deadline-info {
@@ -304,6 +368,11 @@ nav {
     text-decoration: none;
 }
 
+.short-name:hover, .full-name:hover {
+    color: var(--carmine);
+    animation-delay: 2ms;
+}
+
 @media (max-width: 768px) {
     .event-signup h2 {
         font-size: 1.8rem;
@@ -317,4 +386,19 @@ nav {
         display: block;
     }
 
+}
+
+.instagram-icon {
+    position: fixed;
+    /* top: vw; */
+    right: 2vw;
+    font-size: 2em; /* Responsive font size */
+    color: #000;
+    transition: transform 0.3s;
+    z-index: 1000;
+}
+
+.instagram-icon:hover {
+    animation-delay: 2ms;
+    color: var(--carmine)
 }
