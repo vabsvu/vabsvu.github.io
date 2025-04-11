@@ -18,11 +18,13 @@ export default {
           "0%": { transform: "translateX(100%)" },
           "100%": { transform: "translateX(0%)" },
         },
-        marqueeReverse: { // Keyframes for reverse marquee
+        marqueeReverse: {
+          // Keyframes for reverse marquee
           "0%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(100%)" },
         },
-        marqueeReverse2: { // Keyframes for reverse marquee
+        marqueeReverse2: {
+          // Keyframes for reverse marquee
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(0%)" },
         },

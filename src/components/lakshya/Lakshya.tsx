@@ -1,5 +1,5 @@
-import React from 'react';
-import { LakshyaSVG } from './LakshyaSVG';
+import React from "react";
+import { LakshyaSVG } from "./LakshyaSVG";
 
 export const Lakshya = () => {
   return (

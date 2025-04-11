@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-export const AnimatedNoise = ({ className = '', intensity = 70 }) => {
-  const [pattern, setPattern] = useState('');
+export const AnimatedNoise = ({ className = "", intensity = 70 }) => {
+  const [pattern, setPattern] = useState("");
 
   useEffect(() => {
     // Create SVG noise pattern
@@ -19,7 +19,7 @@ export const AnimatedNoise = ({ className = '', intensity = 70 }) => {
         <rect width='100%' height='100%' filter='url(#noiseFilter)'/>
       </svg>
     `;
-    
+
     const encodedSVG = encodeURIComponent(svg);
     setPattern(`url("data:image/svg+xml,${encodedSVG}")`);
   }, []);
@@ -34,13 +34,13 @@ export const AnimatedNoise = ({ className = '', intensity = 70 }) => {
         filter: [
           `contrast(${intensity}%) brightness(800%)`,
           `contrast(${intensity + 30}%) brightness(1000%)`,
-          `contrast(${intensity}%) brightness(800%)`
-        ]
+          `contrast(${intensity}%) brightness(800%)`,
+        ],
       }}
       transition={{
         duration: 4,
         ease: "easeInOut",
-        repeat: Infinity
+        repeat: Infinity,
       }}
     />
   );
@@ -54,23 +54,21 @@ interface BentoBoxProps {
   colorTo?: string;
 }
 
-export const BentoBox: React.FC<BentoBoxProps> = ({ 
-  children, 
-  className = '', 
-  withNoise = true, 
-  colorFrom = 'from-[#992b0d]', 
-  colorTo = 'to-[#d8b148]' 
+export const BentoBox: React.FC<BentoBoxProps> = ({
+  children,
+  className = "",
+  withNoise = true,
+  colorFrom = "from-[#992b0d]",
+  colorTo = "to-[#d8b148]",
 }) => {
   return (
-    <motion.div 
+    <motion.div
       className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${colorFrom} ${colorTo} ${className}`}
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {withNoise && <AnimatedNoise />}
-      <div className="relative z-10">
-        {children}
-      </div>
+      <div className="relative z-10">{children}</div>
     </motion.div>
   );
 };

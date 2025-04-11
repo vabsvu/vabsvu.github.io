@@ -1,14 +1,14 @@
 // src/components/VideoBackground.tsx
-import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { RoundedBox, MeshDistortMaterial } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { RoundedBox, MeshDistortMaterial } from "@react-three/drei";
+import * as THREE from "three";
 
 const COLORS = {
-  maroon: '#992b0d',
-  peachGold: '#d8b148',
-  lightGold: '#e2d57e',
-  peach: '#ecc078',
+  maroon: "#992b0d",
+  peachGold: "#d8b148",
+  lightGold: "#e2d57e",
+  peach: "#ecc078",
 } as const;
 
 interface BadgeLayerProps {
@@ -19,7 +19,12 @@ interface BadgeLayerProps {
 }
 
 // Separate component for the stacked badge layers
-function BadgeLayer({ offset, scale = 1, color, isBackground = false }: BadgeLayerProps) {
+function BadgeLayer({
+  offset,
+  scale = 1,
+  color,
+  isBackground = false,
+}: BadgeLayerProps) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
@@ -29,17 +34,18 @@ function BadgeLayer({ offset, scale = 1, color, isBackground = false }: BadgeLay
       meshRef.current.rotation.x = THREE.MathUtils.lerp(
         meshRef.current.rotation.x,
         state.mouse.y * 0.15,
-        0.1
+        0.1,
       );
       meshRef.current.rotation.y = THREE.MathUtils.lerp(
         meshRef.current.rotation.y,
         state.mouse.x * 0.15,
-        0.1 - delay
+        0.1 - delay,
       );
 
       // Subtle floating animation for depth
       const floatOffset = isBackground ? 0.02 : 0;
-      meshRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.1 + floatOffset;
+      meshRef.current.position.y =
+        Math.sin(state.clock.getElapsedTime() * 0.5) * 0.1 + floatOffset;
     }
   });
 
@@ -160,7 +166,7 @@ export function VideoBackground() {
         />
 
         {/* Fog for a soft, glowing effect */}
-        <fog attach="fog" args={['#000000', 15, 25]} />
+        <fog attach="fog" args={["#000000", 15, 25]} />
 
         <AnimatedBadge />
       </Canvas>

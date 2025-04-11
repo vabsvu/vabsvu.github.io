@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 
 const HennaPatterns = () => {
   // Animation variants for the patterns
@@ -7,17 +7,17 @@ const HennaPatterns = () => {
     hidden: { pathLength: 0, opacity: 0 },
     visible: {
       pathLength: 1,
-      opacity: .5,
+      opacity: 0.5,
       transition: {
         pathLength: { duration: 2, ease: "easeInOut" },
-        opacity: { duration: 0.5 }
-      }
-    }
+        opacity: { duration: 0.5 },
+      },
+    },
   };
 
   // Rich dark red color for henna
   const hennaColor = "#8B0000";
-  
+
   return (
     <div className="absolute inset-0 pointer-events-none mix-blend-soft-light">
       {/* Top left corner pattern - more intricate */}
@@ -91,7 +91,7 @@ const HennaPatterns = () => {
       </motion.svg>
 
       {/* Side decorative elements - more ornate */}
-      <motion.div 
+      <motion.div
         className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-48"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 0.9, x: 0 }}
@@ -101,15 +101,15 @@ const HennaPatterns = () => {
           className="w-full h-full"
           style={{
             background: `linear-gradient(90deg, ${hennaColor} 0%, transparent 100%)`,
-            opacity: 0.7
+            opacity: 0.7,
           }}
           animate={{
-            opacity: [0.7, 0.9, 0.7]
+            opacity: [0.7, 0.9, 0.7],
           }}
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
         />
       </motion.div>
@@ -124,15 +124,15 @@ const HennaPatterns = () => {
           className="w-full h-full"
           style={{
             background: `linear-gradient(-90deg, ${hennaColor} 0%, transparent 100%)`,
-            opacity: 0.7
+            opacity: 0.7,
           }}
           animate={{
-            opacity: [0.7, 0.9, 0.7]
+            opacity: [0.7, 0.9, 0.7],
           }}
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
         />
       </motion.div>
@@ -161,11 +161,11 @@ const HennaPatterns = () => {
             variants={pathVariants}
             transition={{
               ...pathVariants.visible.transition,
-              delay: index * 0.1
+              delay: index * 0.1,
             }}
           />
         ))}
-        
+
         {/* Detailed center elements */}
         {[0, 72, 144, 216, 288].map((rotation, index) => (
           <motion.path
@@ -181,7 +181,7 @@ const HennaPatterns = () => {
             variants={pathVariants}
             transition={{
               ...pathVariants.visible.transition,
-              delay: 0.8 + index * 0.1
+              delay: 0.8 + index * 0.1,
             }}
           />
         ))}

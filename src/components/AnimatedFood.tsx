@@ -76,7 +76,7 @@ function Scene() {
   useFrame((state) => {
     if (thaliRef.current) {
       // Constant rotation
-      thaliRef.current.rotation.y += 0.01 ; // Adjust speed as needed
+      thaliRef.current.rotation.y += 0.01; // Adjust speed as needed
     }
   });
 
@@ -98,17 +98,17 @@ function Scene() {
         material.roughness = THREE.MathUtils.lerp(
           material.roughness,
           hovered ? 0.1 : 0.5,
-          0.1
+          0.1,
         );
         material.metalness = THREE.MathUtils.lerp(
           material.metalness,
           hovered ? 1.0 : 0.8,
-          0.1
+          0.1,
         );
         material.clearcoat = THREE.MathUtils.lerp(
           material.clearcoat,
           hovered ? 1.0 : 0.5,
-          0.1
+          0.1,
         );
       }
     }
@@ -180,7 +180,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >Delicious • Delicious • Delicious • Delicious •</span>
+              >
+                Delicious • Delicious • Delicious • Delicious •
+              </span>
             </div>
             <div className="absolute top-0 animate-marquee2 whitespace-nowrap py-2">
               <span
@@ -189,7 +191,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >Delicious • Delicious • Delicious • Delicious •</span>
+              >
+                Delicious • Delicious • Delicious • Delicious •
+              </span>
             </div>
           </div>
 
@@ -201,7 +205,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >South Asian • South Asian • South Asian • South Asian •</span>
+              >
+                South Asian • South Asian • South Asian • South Asian •
+              </span>
             </div>
             <div className="absolute top-0 animate-marqueeReverse2 whitespace-nowrap py-2">
               <span
@@ -210,7 +216,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >South Asian • South Asian • South Asian • South Asian •</span>
+              >
+                South Asian • South Asian • South Asian • South Asian •
+              </span>
             </div>
           </div>
           {/* Row 3: Food */}
@@ -222,7 +230,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >Food • Food • Food • Food •</span>
+              >
+                Food • Food • Food • Food •
+              </span>
             </div>
             <div className="absolute top-0 animate-marquee2 whitespace-nowrap py-2">
               <span
@@ -231,7 +241,9 @@ export default function AnimatedFood() {
                   WebkitTextStroke: "1px #992b0d",
                   textShadow: "2px 2px 0 #992b0d",
                 }}
-              >Food • Food • Food • Food •</span>
+              >
+                Food • Food • Food • Food •
+              </span>
             </div>
           </div>
         </div>
@@ -260,7 +272,6 @@ export default function AnimatedFood() {
             }}
           >
             <Scene />
-
           </Canvas>
         </div>
       </div>

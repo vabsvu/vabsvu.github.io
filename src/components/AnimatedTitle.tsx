@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 
 export function AnimatedTitle() {
   return (
@@ -44,7 +44,7 @@ export function AnimatedTitle() {
       </motion.div>
 
       {/* Main title with optimized responsive layout */}
-      <motion.div 
+      <motion.div
         className="relative z-10 text-center md:pt-6 pb-4 px-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,19 +53,19 @@ export function AnimatedTitle() {
         <div className="relative">
           {/* Mobile stacked title */}
           <div className="md:hidden">
-            <motion.h1 
+            <motion.h1
               className="text-6xl sm:text-7xl font-quattrocento font-bold flex flex-col items-center gap-1"
               style={{
-                background: 'linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)',
-                backgroundSize: '200% auto',
-                color: 'transparent',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                textShadow: '0px 2px 4px rgba(0,0,0,0.2)',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                background: "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
+                backgroundSize: "200% auto",
+                color: "transparent",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                textShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
               }}
               animate={{
-                backgroundPosition: ['0% center', '200% center'],
+                backgroundPosition: ["0% center", "200% center"],
               }}
               transition={{
                 duration: 8,
@@ -79,19 +79,19 @@ export function AnimatedTitle() {
           </div>
 
           {/* Desktop title */}
-          <motion.h1 
+          <motion.h1
             className="hidden md:block text-8xl font-quattrocento font-bold"
             style={{
-              background: 'linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)',
-              backgroundSize: '200% auto',
-              color: 'transparent',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              textShadow: '0px 2px 4px rgba(0,0,0,0.2)',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+              background: "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
+              backgroundSize: "200% auto",
+              color: "transparent",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              textShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
             }}
             animate={{
-              backgroundPosition: ['0% center', '200% center'],
+              backgroundPosition: ["0% center", "200% center"],
             }}
             transition={{
               duration: 8,
@@ -114,10 +114,12 @@ export function AnimatedTitle() {
               ease: "easeInOut",
             }}
           >
-            <h2 className="text-4xl sm:text-5xl md:text-4xl text-almond font-quattrocento font-bold"
-                style={{
-                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                }}>
+            <h2
+              className="text-4xl sm:text-5xl md:text-4xl text-almond font-quattrocento font-bold"
+              style={{
+                textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              }}
+            >
               2025
             </h2>
           </motion.div>
@@ -127,8 +129,9 @@ export function AnimatedTitle() {
             <motion.div
               className="h-px w-12 sm:w-16 md:w-32"
               style={{
-                background: 'linear-gradient(90deg, transparent, #bf9b30, transparent)',
-                boxShadow: '0 0 8px rgba(191,155,48,0.3)',
+                background:
+                  "linear-gradient(90deg, transparent, #bf9b30, transparent)",
+                boxShadow: "0 0 8px rgba(191,155,48,0.3)",
               }}
               animate={{
                 scaleX: [1, 1.2, 1],
@@ -155,8 +158,9 @@ export function AnimatedTitle() {
             <motion.div
               className="h-px w-12 sm:w-16 md:w-32"
               style={{
-                background: 'linear-gradient(90deg, transparent, #bf9b30, transparent)',
-                boxShadow: '0 0 8px rgba(191,155,48,0.3)',
+                background:
+                  "linear-gradient(90deg, transparent, #bf9b30, transparent)",
+                boxShadow: "0 0 8px rgba(191,155,48,0.3)",
               }}
               animate={{
                 scaleX: [1, 1.2, 1],

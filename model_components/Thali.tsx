@@ -43,7 +43,7 @@ type GLTFResult = GLTF & {
 
 export default function Thali(material, props: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF(
-    "/models/thali/thali.gltf"
+    "/models/thali/thali.gltf",
   ) as GLTFResult;
 
   const textureLoader = new THREE.TextureLoader();

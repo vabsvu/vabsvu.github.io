@@ -16,9 +16,9 @@ const ShinyLakshyaBentoBox = () => {
         className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2"
         animate={{
           background: [
-            'radial-gradient(circle at 30% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)',
-            'radial-gradient(circle at 70% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)',
-            'radial-gradient(circle at 30% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)',
+            "radial-gradient(circle at 30% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)",
+            "radial-gradient(circle at 70% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)",
+            "radial-gradient(circle at 30% 50%, rgba(233,213,255,0.3) 0%, transparent 50%)",
           ],
         }}
         transition={{
@@ -33,9 +33,9 @@ const ShinyLakshyaBentoBox = () => {
         className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2"
         animate={{
           background: [
-            'radial-gradient(circle at 20% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)',
-            'radial-gradient(circle at 80% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 20% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)',
-            'radial-gradient(circle at 20% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)',
+            "radial-gradient(circle at 20% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)",
+            "radial-gradient(circle at 80% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 20% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)",
+            "radial-gradient(circle at 20% 30%, rgba(233,213,255,0.4) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(233,213,255,0.4) 0%, transparent 30%)",
           ],
         }}
         transition={{
@@ -57,7 +57,8 @@ const ShinyLakshyaBentoBox = () => {
           ease: "easeInOut",
         }}
         style={{
-          background: 'radial-gradient(circle at center, rgba(233,213,255,0.2) 0%, transparent 70%)',
+          background:
+            "radial-gradient(circle at center, rgba(233,213,255,0.2) 0%, transparent 70%)",
         }}
       />
 

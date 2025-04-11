@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
-import { motion } from 'framer-motion';
-import { Instagram, ArrowUpRightSquare } from 'lucide-react';
-import { AnimatedTitle } from '../AnimatedTitle';
-import { MobileMenu } from '../MobileMenu';
+import React, { ReactNode } from "react";
+import { motion } from "framer-motion";
+import { Instagram, ArrowUpRightSquare } from "lucide-react";
+import { AnimatedTitle } from "../AnimatedTitle";
+import { MobileMenu } from "../MobileMenu";
 
 interface OrgLinkProps {
   href: string;
@@ -27,26 +27,26 @@ const organizations: OrganizationProps[] = [
     name: "VABS",
     imageSrc: "src/components/orgs/OrgPhotos/vabs.png",
     instagramUrl: "https://www.instagram.com/vandy.bengalis/",
-    scale: 1.5
+    scale: 1.5,
   },
   {
     name: "PSA",
     imageSrc: "src/components/orgs/OrgPhotos/psa.png",
     instagramUrl: "https://www.instagram.com/vandypsa/",
-    scale: 1.2
+    scale: 1.2,
   },
   {
     name: "SACE",
     imageSrc: "src/components/orgs/OrgPhotos/sace.jpeg",
     instagramUrl: "https://www.instagram.com/vanderbiltsace/",
-    scale: 1.3
+    scale: 1.3,
   },
   {
     name: "Spevents",
     imageSrc: "src/components/orgs/OrgPhotos/spevents.svg",
     instagramUrl: "https://spevents.github.io",
-    scale: .9
-  }
+    scale: 0.9,
+  },
 ];
 
 const OrgLink: React.FC<OrgLinkProps> = ({ href, children }) => (
@@ -72,9 +72,7 @@ const OrgImage: React.FC<OrgImageProps> = ({ src, alt, scale = 1 }) => (
       whileHover={{ scale: scale * 1.15 }}
       transition={{ duration: 0.2 }}
     />
-    <div 
-      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-    >
+    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
       {alt === "Spevents" ? (
         <ArrowUpRightSquare className="w-6 h-6 text-white" />
       ) : (
@@ -84,10 +82,15 @@ const OrgImage: React.FC<OrgImageProps> = ({ src, alt, scale = 1 }) => (
   </div>
 );
 
-const OrganizationComponent: React.FC<OrganizationProps> = ({ name, imageSrc, instagramUrl, scale = 1 }) => (
+const OrganizationComponent: React.FC<OrganizationProps> = ({
+  name,
+  imageSrc,
+  instagramUrl,
+  scale = 1,
+}) => (
   <OrgLink href={instagramUrl}>
     <OrgImage src={imageSrc} alt={name} scale={scale} />
-    <motion.span 
+    <motion.span
       className="text-base md:text-lg font-quattrocento font-bold text-[#e2d57e] opacity-80 group-hover:opacity-100"
       whileHover={{ y: -2 }}
     >
