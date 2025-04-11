@@ -12,8 +12,6 @@ tsconfig.node.json
 vite.config.ts
 package-lock.json
 
-src/components/mshaadi_skit_final.mp4
-
 # Ignore logs
 *.log
 
