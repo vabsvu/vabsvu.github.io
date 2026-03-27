@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import HennaPatterns from "./HennaPatterns";
+import { useIsVisible } from "../hooks/useIsVisible";
 
 export const AnimatedHolud = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isVisible = useIsVisible(ref);
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -28,14 +32,12 @@ export const AnimatedHolud = () => {
   };
 
   return (
-    <div className="relative overflow-hidden w-full h-full">
+    <div ref={ref} className="relative overflow-hidden w-full h-full">
       <div className="relative h-full rounded-lg">
         {/* Rich animated background */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-[#8B2B0D] via-[#D4AF37] to-[#8B2B0D]"
-          animate={{
-            opacity: [0.7, 0.9, 0.7],
-          }}
+          animate={isVisible ? { opacity: [0.7, 0.9, 0.7] } : undefined}
           transition={{
             duration: 3,
             repeat: Infinity,
@@ -44,14 +46,16 @@ export const AnimatedHolud = () => {
         />
 
         {/* Animated Henna Patterns */}
-        <HennaPatterns />
+        <HennaPatterns isVisible={isVisible} />
 
         {/* Animated noise overlay */}
         <motion.div
           className="absolute inset-0 mix-blend-overlay opacity-50"
-          animate={{
-            backgroundPosition: ["0% 0%", "100% 100%"],
-          }}
+          animate={
+            isVisible
+              ? { backgroundPosition: ["0% 0%", "100% 100%"] }
+              : undefined
+          }
           transition={{
             duration: 8,
             repeat: Infinity,

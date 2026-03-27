@@ -1,20 +1,18 @@
-# Ignore .DS_Store files
+# System files
 .DS_Store
-src/.DS_Store
 
-# Ignore node_modules folder (if present)
+# Dependencies
 node_modules/
 
-# Ignore configuration files that are local to your environment
-tailwind.config.ts
-tsconfig.json
-tsconfig.node.json
-vite.config.ts
+# Build output
+dist/
+
+# Lockfiles (npm)
 package-lock.json
 
-# Ignore logs
+# Logs
 *.log
 
-# Ignore other system files or IDE-specific files (e.g., VSCode, IntelliJ)
+# IDE
 .vscode/
 .idea/

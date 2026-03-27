@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
+import { useIsVisible } from "../hooks/useIsVisible";
 
 export const AnimatedSLC = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isVisible = useIsVisible(ref);
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -27,7 +31,7 @@ export const AnimatedSLC = () => {
   };
 
   return (
-    <div className="relative overflow-hidden -translate-y-5">
+    <div ref={ref} className="relative overflow-hidden -translate-y-5">
       {/* Main content container */}
       <div className="relative h-full">
         <motion.div
@@ -40,13 +44,17 @@ export const AnimatedSLC = () => {
           {/* Enhanced layered background effects */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-[#992b0d] via-[#d8b148] to-[#992b0d] opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-lg"
-            animate={{
-              background: [
-                "radial-gradient(circle at 0% 0%, #992b0d44, #d8b14844, #992b0d44)",
-                "radial-gradient(circle at 100% 100%, #992b0d44, #d8b14844, #992b0d44)",
-                "radial-gradient(circle at 0% 0%, #992b0d44, #d8b14844, #992b0d44)",
-              ],
-            }}
+            animate={
+              isVisible
+                ? {
+                    background: [
+                      "radial-gradient(circle at 0% 0%, #992b0d44, #d8b14844, #992b0d44)",
+                      "radial-gradient(circle at 100% 100%, #992b0d44, #d8b14844, #992b0d44)",
+                      "radial-gradient(circle at 0% 0%, #992b0d44, #d8b14844, #992b0d44)",
+                    ],
+                  }
+                : undefined
+            }
             transition={{
               duration: 3,
               repeat: Infinity,
@@ -57,25 +65,9 @@ export const AnimatedSLC = () => {
           {/* Animated shine effect */}
           <motion.div
             className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-lg"
-            animate={{
-              x: ["-200%", "200%"],
-            }}
+            animate={isVisible ? { x: ["-200%", "200%"] } : undefined}
             transition={{
               duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          {/* Radial glow effect */}
-          <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-40 bg-gradient-radial from-[#ecc078]/30 via-transparent to-transparent rounded-lg"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0, 0.4, 0],
-            }}
-            transition={{
-              duration: 2.5,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -116,40 +108,41 @@ export const AnimatedSLC = () => {
               variants={item}
               className="flex font-black stroke-black items-center gap-3 text-2xl md:text-3xl text-carmine font-quattrocento"
             >
-              <span className="text-carmine">✧</span>
+              <span className="text-carmine">&#10023;</span>
               7:00 PM
-              <span className="text-carmine">✧</span>
+              <span className="text-carmine">&#10023;</span>
             </motion.div>
           </div>
 
-          {/* Enhanced floating decorative elements */}
-          {[...Array(10)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full"
-              style={{
-                background: i % 2 === 0 ? "#ecc078" : "#e2d57e",
-                filter: "blur(2px)",
-                boxShadow: "0 0 12px rgba(236,192,120,0.5)",
-              }}
-              animate={{
-                y: [-20, -40, -20],
-                x: [-10, 10, -10],
-                opacity: [0, 1, 0],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{
-                duration: 3,
-                delay: i * 0.4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              initial={{
-                left: `${20 + i * 10}%`,
-                bottom: "15%",
-              }}
-            />
-          ))}
+          {/* Reduced floating decorative elements (4 instead of 10) */}
+          {isVisible &&
+            [...Array(4)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full"
+                style={{
+                  background: i % 2 === 0 ? "#ecc078" : "#e2d57e",
+                  filter: "blur(2px)",
+                  boxShadow: "0 0 12px rgba(236,192,120,0.5)",
+                }}
+                animate={{
+                  y: [-20, -40, -20],
+                  x: [-10, 10, -10],
+                  opacity: [0, 1, 0],
+                  scale: [1, 1.3, 1],
+                }}
+                transition={{
+                  duration: 3,
+                  delay: i * 0.6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                initial={{
+                  left: `${15 + i * 20}%`,
+                  bottom: "15%",
+                }}
+              />
+            ))}
         </motion.div>
       </div>
     </div>

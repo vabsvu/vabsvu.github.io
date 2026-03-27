@@ -516,22 +516,22 @@
   ],
   "images": [
     {
-      "uri": "textures/blinn4_baseColor.png"
+      "uri": "textures/blinn4_baseColor.webp"
     },
     {
-      "uri": "textures/blinn2_baseColor.png"
+      "uri": "textures/blinn2_baseColor.webp"
     },
     {
-      "uri": "textures/blinn3_baseColor.png"
+      "uri": "textures/blinn3_baseColor.webp"
     },
     {
-      "uri": "textures/blinn12_baseColor.png"
+      "uri": "textures/blinn12_baseColor.webp"
     },
     {
-      "uri": "textures/blinn11_baseColor.png"
+      "uri": "textures/blinn11_baseColor.webp"
     },
     {
-      "uri": "textures/blinn1_baseColor.png"
+      "uri": "textures/blinn1_baseColor.webp"
     }
   ],
   "materials": [

@@ -1,7 +1,5 @@
 import React from "react";
 import { BoxHover } from "./BoxHover";
-import { VideoBackground } from "./VideoBackground";
-import { Play, Volume2 } from "lucide-react";
 
 export function VideoPlayer() {
   return (
@@ -18,12 +16,8 @@ export function VideoPlayer() {
               className="absolute inset-0 w-full h-full object-contain rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.02]"
               controls
               preload="metadata"
-              poster="/src/components/mshaadi_skit_final.mp4?t=0"
             >
-              <source
-                src="/src/components/mshaadi_skit_final.mp4"
-                type="video/mp4"
-              />
+              <source src="/video/mshaadi_skit_final.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>

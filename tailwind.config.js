@@ -7,7 +7,9 @@ export default {
         marquee: "marquee 25s linear infinite",
         marquee2: "marquee2 25s linear infinite",
         marqueeReverse: "marqueeReverse 25s linear infinite", // New reverse marquee animation
-        marqueeReverse2: "marqueeReverse2 25s linear infinite", // New reverse marquee animation
+        marqueeReverse2: "marqueeReverse2 25s linear infinite",
+        "pulse-scale": "pulse-scale 2s ease-in-out infinite",
+        "pulse-line": "pulse-line 2s ease-in-out infinite",
       },
       keyframes: {
         marquee: {
@@ -24,9 +26,16 @@ export default {
           "100%": { transform: "translateX(100%)" },
         },
         marqueeReverse2: {
-          // Keyframes for reverse marquee
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(0%)" },
+        },
+        "pulse-scale": {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.7" },
+          "50%": { transform: "scale(1.2)", opacity: "1" },
+        },
+        "pulse-line": {
+          "0%, 100%": { transform: "scaleX(1)", opacity: "0.5" },
+          "50%": { transform: "scaleX(1.2)", opacity: "1" },
         },
       },
       colors: {

@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useIsVisible } from "../hooks/useIsVisible";
 
 export const AnimatedNoise = ({ className = "", intensity = 70 }) => {
   const [pattern, setPattern] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const isVisible = useIsVisible(ref);
 
   useEffect(() => {
-    // Create SVG noise pattern
     const svg = `
       <svg viewBox="0 0 200 200" xmlns='http://www.w3.org/2000/svg'>
         <filter id='noiseFilter'>
-          <feTurbulence 
-            type='fractalNoise' 
-            baseFrequency='0.50' 
-            numOctaves='1' 
+          <feTurbulence
+            type='fractalNoise'
+            baseFrequency='0.50'
+            numOctaves='1'
             stitchTiles='stitch'/>
           <feColorMatrix type="saturate" values="0.2"/>
         </filter>
@@ -26,17 +28,22 @@ export const AnimatedNoise = ({ className = "", intensity = 70 }) => {
 
   return (
     <motion.div
+      ref={ref}
       className={`absolute inset-0 mix-blend-overlay opacity-50 ${className}`}
       style={{
         backgroundImage: pattern,
       }}
-      animate={{
-        filter: [
-          `contrast(${intensity}%) brightness(800%)`,
-          `contrast(${intensity + 30}%) brightness(1000%)`,
-          `contrast(${intensity}%) brightness(800%)`,
-        ],
-      }}
+      animate={
+        isVisible
+          ? {
+              filter: [
+                `contrast(${intensity}%) brightness(800%)`,
+                `contrast(${intensity + 30}%) brightness(1000%)`,
+                `contrast(${intensity}%) brightness(800%)`,
+              ],
+            }
+          : undefined
+      }
       transition={{
         duration: 4,
         ease: "easeInOut",

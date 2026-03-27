@@ -8,18 +8,18 @@ import Autoplay from "embla-carousel-autoplay";
 const eventPosts = [
   {
     id: 1,
-    imageUrl: "src/components/insta_photos/advocacy_event.png",
+    imageUrl: "/images/insta/advocacy_event.webp",
     caption: "Learning more about our culture and traditions 📰",
   },
   {
     id: 2,
-    imageUrl: "src/components/insta_photos/mshaadi.png",
+    imageUrl: "/images/insta/mshaadi.webp",
     caption:
       "Celebrating our vibrant South Asian culture at Mock Shaadi 2024!✨",
   },
   {
     id: 3,
-    imageUrl: "src/components/insta_photos/roth_n_roll.png",
+    imageUrl: "/images/insta/roth_n_roll.webp",
     caption: "Sharing amazing Bengali foods for all of Rothschild! 🎉",
   },
 ];
@@ -128,6 +128,7 @@ const OrgShowcase = ({ isVisible = true }) => {
                           <img
                             src={post.imageUrl}
                             alt={post.caption}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                           />
                           <motion.div
@@ -155,44 +156,9 @@ const OrgShowcase = ({ isVisible = true }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <motion.div
-                  className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-[#e2d57e] to-transparent"
-                  animate={{
-                    scaleX: [1, 1.2, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-
-                <motion.div
-                  className="w-3 h-3 rounded-full bg-[#e36414]"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.7, 1, 0.7],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-
-                <motion.div
-                  className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-[#e2d57e] to-transparent"
-                  animate={{
-                    scaleX: [1, 1.2, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
+                <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-[#e2d57e] to-transparent animate-pulse-line" />
+                <div className="w-3 h-3 rounded-full bg-[#e36414] animate-pulse-scale" />
+                <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-[#e2d57e] to-transparent animate-pulse-line" />
               </motion.div>
             </div>
           </div>

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AnimatedTitle } from "./AnimatedTitle";
-import { BentoGrid } from "./BentoGrid";
 import { OrgHeader } from "./orgs/OrgHeader";
 import AnimatedBorder from "./AnimatedBorder";
-import OrgShowcase from "./OrgShowcase";
+
+const BentoGrid = lazy(() =>
+  import("./BentoGrid").then((m) => ({ default: m.BentoGrid })),
+);
+const OrgShowcase = lazy(() => import("./OrgShowcase"));
 
 const OpeningSequence = () => {
   const [showOpening, setShowOpening] = useState(true);
@@ -118,42 +120,9 @@ const OpeningSequence = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 2 }}
             >
-              <motion.div
-                className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent"
-                animate={{
-                  scaleX: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <motion.div
-                className="w-2 h-2 rounded-full bg-spanish"
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.7, 1, 0.7],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <motion.div
-                className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent"
-                animate={{
-                  scaleX: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
+              <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent animate-pulse-line" />
+              <div className="w-2 h-2 rounded-full bg-spanish animate-pulse-scale" />
+              <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent animate-pulse-line" />
             </motion.div>
           </motion.div>
         )}
@@ -173,12 +142,16 @@ const OpeningSequence = () => {
             {/* Main content */}
             <div className="max-w-7xl bg-transparent mx-auto space-y-8 relative z-10">
               <div className="p-6">
-                <BentoGrid />
+                <Suspense fallback={<div className="min-h-[600px]" />}>
+                  <BentoGrid />
+                </Suspense>
               </div>
             </div>
 
             {/* Organization showcase section */}
-            <OrgShowcase isVisible={showContent} />
+            <Suspense fallback={<div className="min-h-[400px]" />}>
+              <OrgShowcase isVisible={showContent} />
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

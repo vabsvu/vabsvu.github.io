@@ -1,86 +1,50 @@
-import React, { Suspense, useRef, useState, useEffect, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import React, {
+  Suspense,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import Model from "../../model_components/Thali";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import { motion } from "framer-motion";
 
 const vec = new THREE.Vector3();
-function Rig() {
-  return useFrame(({ camera, mouse }) => {
-    vec.set(mouse.x * 0.005, mouse.y * 0.005, camera.position.z);
-    camera.position.lerp(vec, 0.25);
-    camera.lookAt(0, 0, 0);
-  });
-}
-
-function useMousePosition() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({
-        x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: -(event.clientY / window.innerHeight) * 2 + 1,
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  return mousePosition;
-}
-
-function useWindowSize() {
-  const [size, setSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-
-  useEffect(() => {
-    const handleResize = () =>
-      setSize({ width: window.innerWidth, height: window.innerHeight });
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return size;
-}
 
 function Scene() {
   const thaliRef = useRef<THREE.Group>(null);
-  const [flipped, setFlipped] = useState(false);
+  const mouseRef = useRef({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
-  const { width } = useWindowSize();
-  const mousePosition = useMousePosition();
+  const [scaleFactor, setScaleFactor] = useState(() =>
+    getScaleFactor(window.innerWidth),
+  );
 
-  const getScaleFactor = (width: number) => {
-    if (width < 480) {
-      // Mobile phones
-      return 0.7;
-    } else if (width < 768) {
-      // Tablets
-      return 0.75;
-    } else if (width < 1024) {
-      // Small laptops
-      return 0.8;
-    } else if (width < 1200) {
-      // Regular laptops
-      return 0.85;
-    }
-    return 1; // Large screens
-  };
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
 
-  const scaleFactor = getScaleFactor(width);
-  useFrame((state) => {
-    if (thaliRef.current) {
-      // Constant rotation
-      thaliRef.current.rotation.y += 0.01; // Adjust speed as needed
-    }
-  });
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        setScaleFactor(getScaleFactor(window.innerWidth));
+      }, 150);
+    };
 
-  // Create a custom material with dynamic properties
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(resizeTimer);
+    };
+  }, []);
+
   const material = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
       metalness: 0.9,
@@ -91,27 +55,44 @@ function Scene() {
     });
   }, []);
 
-  useFrame(() => {
+  useEffect(() => {
+    return () => {
+      material.dispose();
+    };
+  }, [material]);
+
+  // Single consolidated useFrame for all per-frame work
+  useFrame(({ camera }) => {
+    // Camera rig
+    vec.set(
+      mouseRef.current.x * 0.005,
+      mouseRef.current.y * 0.005,
+      camera.position.z,
+    );
+    camera.position.lerp(vec, 0.25);
+    camera.lookAt(0, 0, 0);
+
+    // Thali rotation
     if (thaliRef.current) {
-      // Update material properties based on hover state
-      if (material) {
-        material.roughness = THREE.MathUtils.lerp(
-          material.roughness,
-          hovered ? 0.1 : 0.5,
-          0.1,
-        );
-        material.metalness = THREE.MathUtils.lerp(
-          material.metalness,
-          hovered ? 1.0 : 0.8,
-          0.1,
-        );
-        material.clearcoat = THREE.MathUtils.lerp(
-          material.clearcoat,
-          hovered ? 1.0 : 0.5,
-          0.1,
-        );
-      }
+      thaliRef.current.rotation.y += 0.01;
     }
+
+    // Material hover lerp
+    material.roughness = THREE.MathUtils.lerp(
+      material.roughness,
+      hovered ? 0.1 : 0.5,
+      0.1,
+    );
+    material.metalness = THREE.MathUtils.lerp(
+      material.metalness,
+      hovered ? 1.0 : 0.8,
+      0.1,
+    );
+    material.clearcoat = THREE.MathUtils.lerp(
+      material.clearcoat,
+      hovered ? 1.0 : 0.5,
+      0.1,
+    );
   });
 
   return (
@@ -122,11 +103,8 @@ function Scene() {
         angle={0.15}
         penumbra={1}
         intensity={hovered ? 2.0 : 1.5}
-        castShadow
       />
       <pointLight position={[-10, -10, -10]} intensity={hovered ? 0.8 : 0.5} />
-
-      {/* Add a subtle environmental lighting for better reflections */}
       <hemisphereLight
         intensity={0.3}
         groundColor={new THREE.Color(0x080820)}
@@ -138,7 +116,6 @@ function Scene() {
           scale={scaleFactor}
           rotation={[0, 0, -1]}
           position={[0.0015, 0.0085, 2.35]}
-          onClick={() => setFlipped(!flipped)}
           onPointerOver={() => setHovered(true)}
           onPointerOut={() => setHovered(false)}
         >
@@ -146,9 +123,16 @@ function Scene() {
         </group>
       </Suspense>
       <Environment preset="sunset" />
-      <Rig />
     </>
   );
+}
+
+function getScaleFactor(width: number) {
+  if (width < 480) return 0.7;
+  if (width < 768) return 0.75;
+  if (width < 1024) return 0.8;
+  if (width < 1200) return 0.85;
+  return 1;
 }
 
 export default function AnimatedFood() {
@@ -251,12 +235,11 @@ export default function AnimatedFood() {
         {/* ThreeJS Model */}
         <div className="absolute w-full h-[150px] z-20  flex items-center justify-center">
           <Canvas
-            shadows
             camera={{
               position: [0, 0, 2.5],
               fov: 35,
-              near: 0.0001,
-              far: 10000,
+              near: 0.1,
+              far: 100,
             }}
             gl={{
               antialias: true,
@@ -268,7 +251,7 @@ export default function AnimatedFood() {
               width: "100%",
               height: "100%",
               position: "absolute",
-              zIndex: 20, // Ensure the canvas appears above the scrolling text
+              zIndex: 20,
             }}
           >
             <Scene />

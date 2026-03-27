@@ -1,6 +1,6 @@
 // Thali.tsx
 import * as THREE from "three";
-import React from "react";
+import React, { useMemo, useEffect } from "react";
 import { useGLTF, Environment } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 
@@ -35,54 +35,69 @@ type GLTFResult = GLTF & {
     blinn13: THREE.MeshStandardMaterial;
     blinn12: THREE.MeshStandardMaterial;
     blinn11: THREE.MeshStandardMaterial;
-
-    // CUCUMBER
     blinn1: THREE.MeshStandardMaterial;
   };
 };
 
-export default function Thali(material, props: JSX.IntrinsicElements["group"]) {
+export default function Thali(
+  material: any,
+  props: JSX.IntrinsicElements["group"],
+) {
   const { nodes, materials } = useGLTF(
     "/models/thali/thali.gltf",
   ) as GLTFResult;
 
-  const textureLoader = new THREE.TextureLoader();
-  const plateTexture = textureLoader.load("/textures/plate.jpeg");
-  const cupTexture = textureLoader.load("/textures/cup.avif");
-  const lassiTexture = textureLoader.load("textures/lassi.png");
+  const textures = useMemo(() => {
+    const loader = new THREE.TextureLoader();
+    return {
+      plate: loader.load("/textures/plate.jpeg"),
+      cup: loader.load("/textures/cup.avif"),
+      lassi: loader.load("/textures/lassi.png"),
+    };
+  }, []);
 
-  const goldMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xfff27d, // Brighter gold color
-    metalness: 1.0,
-    roughness: 0.05, // Decreased for more shine
-    envMapIntensity: 2.5, // Increased reflections
-    reflectivity: 1.5,
-    clearcoat: 0.8, // Increased for more shine
-    clearcoatRoughness: 0.05,
-  });
+  const customMaterials = useMemo(
+    () => ({
+      gold: new THREE.MeshPhysicalMaterial({
+        color: 0xfff27d,
+        metalness: 1.0,
+        roughness: 0.05,
+        envMapIntensity: 2.5,
+        reflectivity: 1.0,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.05,
+      }),
+      cup: new THREE.MeshPhysicalMaterial({
+        map: textures.cup,
+        color: 0xa80101,
+        metalness: 1.0,
+        roughness: 0.1,
+        envMapIntensity: 1.5,
+        reflectivity: 1.0,
+        clearcoat: 0.5,
+        emissive: 0xa80101,
+        emissiveIntensity: 0.2,
+      }),
+      lassi: new THREE.MeshPhysicalMaterial({
+        color: 0xffd400,
+        metalness: 1.0,
+        roughness: 0.1,
+        envMapIntensity: 1.5,
+        reflectivity: 1.0,
+        clearcoat: 1.0,
+        emissive: 0xffeb3b,
+        emissiveIntensity: 0.1,
+      }),
+    }),
+    [textures],
+  );
 
-  const cupMaterial = new THREE.MeshPhysicalMaterial({
-    map: cupTexture,
-    color: 0xa80101, // Brighter red
-    metalness: 1.0, // Increased
-    roughness: 0.1, // Decreased for more shine
-    envMapIntensity: 1.5, // Increased
-    reflectivity: 1.2,
-    clearcoat: 0.5, // Increased
-    emissive: 0xa80101, // Added emissive for extra glow
-    emissiveIntensity: 0.2,
-  });
-
-  const lassiMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffd400, // Brighter gold
-    metalness: 1.0, // Increased
-    roughness: 0.1, // Decreased for more shine
-    envMapIntensity: 1.5, // Increased
-    reflectivity: 15, // Increased
-    clearcoat: 1.0, // Maximum clearcoat
-    emissive: 0xffeb3b, // Added emissive for extra glow
-    emissiveIntensity: 0.1,
-  });
+  useEffect(() => {
+    return () => {
+      Object.values(textures).forEach((t) => t.dispose());
+      Object.values(customMaterials).forEach((m) => m.dispose());
+    };
+  }, [textures, customMaterials]);
 
   return (
     <>
@@ -99,7 +114,7 @@ export default function Thali(material, props: JSX.IntrinsicElements["group"]) {
           {/* SILVER CUP */}
           <mesh
             geometry={nodes.pCylinder1_blinn5_0.geometry}
-            material={cupMaterial}
+            material={customMaterials.cup}
             position={[-0.19, 0.394, 4.978]}
             rotation={[0, -0.235, 0]}
             scale={0.203}
@@ -108,7 +123,7 @@ export default function Thali(material, props: JSX.IntrinsicElements["group"]) {
           {/* SILVER PLATE*/}
           <mesh
             geometry={nodes.pCylinder3_blinn10_0.geometry}
-            material={goldMaterial}
+            material={customMaterials.gold}
             position={[0.769, 0.197, 3.386]}
             scale={0.203}
           />
@@ -187,7 +202,7 @@ export default function Thali(material, props: JSX.IntrinsicElements["group"]) {
           {/* CUP LIQUID */}
           <mesh
             geometry={nodes.pCylinder4_blinn13_0.geometry}
-            material={lassiMaterial}
+            material={customMaterials.lassi}
             position={[-0.19, 1.223, 4.978]}
             scale={0.539}
           />

@@ -25,25 +25,25 @@ interface OrganizationProps {
 const organizations: OrganizationProps[] = [
   {
     name: "VABS",
-    imageSrc: "src/components/orgs/OrgPhotos/vabs.png",
+    imageSrc: "/images/orgs/vabs.webp",
     instagramUrl: "https://www.instagram.com/vandy.bengalis/",
     scale: 1.5,
   },
   {
     name: "PSA",
-    imageSrc: "src/components/orgs/OrgPhotos/psa.png",
+    imageSrc: "/images/orgs/psa.webp",
     instagramUrl: "https://www.instagram.com/vandypsa/",
     scale: 1.2,
   },
   {
     name: "SACE",
-    imageSrc: "src/components/orgs/OrgPhotos/sace.jpeg",
+    imageSrc: "/images/orgs/sace.jpeg",
     instagramUrl: "https://www.instagram.com/vanderbiltsace/",
     scale: 1.3,
   },
   {
     name: "Spevents",
-    imageSrc: "src/components/orgs/OrgPhotos/spevents.svg",
+    imageSrc: "/images/orgs/spevents.svg",
     instagramUrl: "https://spevents.github.io",
     scale: 0.9,
   },
@@ -67,6 +67,7 @@ const OrgImage: React.FC<OrgImageProps> = ({ src, alt, scale = 1 }) => (
     <motion.img
       src={src}
       alt={alt}
+      loading="lazy"
       className="w-full h-full object-contain p-2"
       style={{ scale }}
       whileHover={{ scale: scale * 1.15 }}
