@@ -9,6 +9,7 @@ import { EmptyMonthState } from "./EmptyMonthState";
 import { AroundMonthStrip } from "./AroundMonthStrip";
 import { EventListMobile } from "./EventListMobile";
 import { EventModal } from "./EventModal";
+import { SectionHeading } from "../SectionHeading";
 import type { CalendarEvent, EventsData } from "../../types/events";
 
 export default function EventsCalendar() {
@@ -62,13 +63,14 @@ export default function EventsCalendar() {
       <section id="events" className="py-16 px-4">
         <div ref={sectionRef} className="max-w-4xl mx-auto">
           {/* Section header */}
-          <div data-reveal className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-quattrocento font-bold text-almond">
-              Events
-            </h2>
-            <p className="text-almond/70 font-quattrocento mt-2 text-sm">
-              Stay up to date with VABS activities
-            </p>
+          <div data-reveal className="mb-8">
+            <SectionHeading
+              index="০১"
+              label="Events"
+              title="Events"
+              accent="Stay up to date with VABS activities"
+              align="left"
+            />
           </div>
 
           {/* Calendar card */}

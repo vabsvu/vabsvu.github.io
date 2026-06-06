@@ -64,6 +64,9 @@ export default {
         marker: ["Permanent Marker", "cursive"],
         playfair: ["Playfair Display", "serif"],
         instrumentSerif: ["Instrument Serif", "serif"],
+        // Bengali display script (loaded in index.html) — used for section
+        // numbering (০১/০২/০৩) and other first-class Bengali display text.
+        tiroBangla: ["Tiro Bangla", "serif"],
       },
     },
   },

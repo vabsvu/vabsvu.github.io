@@ -63,6 +63,20 @@ export default function SiteLayout() {
 
   return (
     <AnimatedBorder className="min-h-screen bg-gradient-to-br from-[#992b0d] via-[#761f0a] to-[#4d1405] relative overflow-hidden">
+      {/* Atmosphere — two static, fixed, non-interactive layers behind all
+          content. Negative z keeps them under every in-flow section while
+          still painting above AnimatedBorder's henna SVG (which sits at z-0
+          in the root stacking context, below this z-1 content wrapper):
+          page bg < henna border < vignette/glows < grain < content. */}
+      <div
+        aria-hidden="true"
+        className="bg-vignette fixed inset-0 -z-10 pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="bg-grain fixed inset-0 -z-10 pointer-events-none opacity-5 mix-blend-overlay"
+      />
+
       <Navbar />
 
       <HeroSection />

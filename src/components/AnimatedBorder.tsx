@@ -128,12 +128,15 @@ const AnimatedBorder: React.FC<AnimatedBorderProps> = ({
       const defaults = { ease: "power2.inOut" };
       const tl = gsap.timeline({ defaults });
 
+      // Final opacities vary per class so the drawing has depth: primary
+      // strokes (center, vines, corners) settle at 1, secondary detail
+      // (leaves, fine vines, dots) sits slightly back.
       tl.to(".bp-c", { strokeDashoffset: 0, opacity: 1, stagger: 0.04, duration: 0.8 }, 0);
       tl.to(".bp-v", { strokeDashoffset: 0, opacity: 1, stagger: 0.08, duration: 1.6 }, 0.3);
-      tl.to(".bp-v2", { strokeDashoffset: 0, opacity: 1, stagger: 0.06, duration: 1.4 }, 0.5);
-      tl.to(".bp-d", { strokeDashoffset: 0, opacity: 1, stagger: 0.03, duration: 0.3 }, 0.4);
-      tl.to(".bp-l", { strokeDashoffset: 0, opacity: 1, stagger: 0.04, duration: 0.4 }, 0.8);
-      tl.to(".bp-e", { strokeDashoffset: 0, opacity: 1, stagger: 0.06, duration: 1.0 }, 1.2);
+      tl.to(".bp-v2", { strokeDashoffset: 0, opacity: 0.85, stagger: 0.06, duration: 1.4 }, 0.5);
+      tl.to(".bp-d", { strokeDashoffset: 0, opacity: 0.9, stagger: 0.03, duration: 0.3 }, 0.4);
+      tl.to(".bp-l", { strokeDashoffset: 0, opacity: 0.8, stagger: 0.04, duration: 0.4 }, 0.8);
+      tl.to(".bp-e", { strokeDashoffset: 0, opacity: 0.9, stagger: 0.06, duration: 1.0 }, 1.2);
       tl.to(".bp-cr", { strokeDashoffset: 0, opacity: 1, stagger: 0.05, duration: 0.7 }, 1.5);
     },
     { scope: overlayRef },

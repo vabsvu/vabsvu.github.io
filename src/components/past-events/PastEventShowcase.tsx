@@ -3,6 +3,8 @@ import { MotionConfig } from "framer-motion";
 import { Instagram, ArrowUpRightSquare } from "lucide-react";
 import { BentoGrid } from "./bento/BentoGrid";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
+import { SectionHeading } from "../SectionHeading";
+import { AlponaDivider } from "../AlponaDivider";
 
 const partners = [
   {
@@ -57,35 +59,34 @@ export default function PastEventShowcase() {
 
         <div ref={sectionRef} className="max-w-7xl mx-auto">
           {/* Section header */}
-          <div data-reveal className="text-center mb-8">
-            <p className="text-gold/60 text-sm font-quattrocento tracking-wider uppercase mb-2">
-              Past Events &middot; From the Archive
-            </p>
-            <h2
-              className="text-3xl md:text-4xl font-quattrocento font-bold tracking-tight mb-3 motion-safe:animate-gradient-pan"
-              style={{
-                background: "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
-                backgroundSize: "200% auto",
-                color: "transparent",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-              }}
-            >
-              Mock Shaadi 2025
-            </h2>
-            <p className="text-almond/60 font-quattrocento italic">
-              Where Tradition Meets Tomorrow &mdash; relive the night.
-            </p>
+          <div data-reveal className="mb-8">
+            <SectionHeading
+              index="০৩"
+              label="From the Archive"
+              title={
+                <span
+                  className="motion-safe:animate-gradient-pan"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
+                    backgroundSize: "200% auto",
+                    color: "transparent",
+                    backgroundClip: "text",
+                    WebkitBackgroundClip: "text",
+                  }}
+                >
+                  Mock Shaadi 2025
+                </span>
+              }
+              accent="Where tradition meets tomorrow — relive the night"
+              align="left"
+            />
 
-            <div className="flex items-center justify-center gap-3 mt-4">
-              <div className="h-px w-16 md:w-24 bg-gradient-to-r from-transparent via-gold to-transparent motion-safe:animate-pulse-line" />
-              <div className="w-2 h-2 rounded-full bg-spanish motion-safe:animate-pulse-scale" />
-              <div className="h-px w-16 md:w-24 bg-gradient-to-r from-transparent via-gold to-transparent motion-safe:animate-pulse-line" />
-            </div>
+            <AlponaDivider className="mx-auto mt-8 opacity-80" />
 
             {/* Presented by + partner orgs */}
-            <div className="mt-6">
-              <p className="text-almond/40 text-xs font-quattrocento tracking-wider uppercase mb-3">
+            <div className="mt-6 text-center">
+              <p className="text-almond/70 text-xs font-quattrocento tracking-wider uppercase mb-3">
                 Presented by Vanderbilt University South Asian Organizations
               </p>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-3 md:gap-x-6 max-w-md mx-auto">

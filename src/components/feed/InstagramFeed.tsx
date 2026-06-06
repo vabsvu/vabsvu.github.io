@@ -5,12 +5,21 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Instagram, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Instagram,
+  ChevronLeft,
+  ChevronRight,
+  Anchor,
+  TreeDeciduous,
+  Sparkles,
+} from "lucide-react";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
+import { SectionHeading } from "../SectionHeading";
+import { AlponaDivider } from "../AlponaDivider";
 import type { InstagramPost, PostsData } from "../../types/events";
 
 type EmblaApi = NonNullable<UseEmblaCarouselType[1]>;
@@ -210,6 +219,24 @@ export default function InstagramFeed() {
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
+  // Index of the newest post by timestamp — never assume feed order.
+  const mostRecentIndex = useMemo(
+    () =>
+      posts.reduce(
+        (best, post, i) =>
+          new Date(post.timestamp).getTime() >
+          new Date(posts[best].timestamp).getTime()
+            ? i
+            : best,
+        0,
+      ),
+    [posts],
+  );
+  const scrollMostRecent = useCallback(
+    () => emblaApi?.scrollTo(mostRecentIndex),
+    [emblaApi, mostRecentIndex],
+  );
+
   const onVisibilityChange = useCallback(() => {
     if (emblaApi && document.visibilityState === "visible") {
       emblaApi.plugins().autoplay?.reset();
@@ -239,19 +266,57 @@ export default function InstagramFeed() {
       <div ref={sectionRef} className="relative max-w-6xl mx-auto">
         <div data-reveal className="p-8 backdrop-blur-sm rounded-xl bg-black/10">
           {/* Header */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-quattrocento font-bold tracking-tight text-almond">
-              From Our Instagram
-            </h2>
-            <a
-              href="https://www.instagram.com/vandy.bengalis/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="VABS on Instagram"
-              className="flex items-center justify-center p-2 rounded-full bg-almond/10 hover:bg-spanish/20 hover:scale-110 active:scale-95 transition-all duration-200"
-            >
-              <Instagram className="w-6 h-6 text-almond" />
-            </a>
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-5 mb-10">
+            <SectionHeading
+              index="০২"
+              label="Instagram"
+              title="From Our Instagram"
+              accent="Life at VABS, as we post it"
+              align="left"
+            />
+            <div className="shrink-0 mb-1 flex flex-col items-end gap-3">
+              {/* Platform links — Anchor Link · Linktree · Instagram */}
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://anchorlink.vanderbilt.edu/organization/vabs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="VABS on Anchor Link"
+                  title="Anchor Link"
+                  className="flex items-center justify-center p-2 rounded-full bg-almond/10 hover:bg-spanish/20 hover:scale-110 active:scale-95 transition-all duration-200"
+                >
+                  <Anchor className="w-6 h-6 text-almond" />
+                </a>
+                <a
+                  href="https://linktr.ee/VandyBengalis"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="VABS Linktree"
+                  title="Linktree"
+                  className="flex items-center justify-center p-2 rounded-full bg-almond/10 hover:bg-spanish/20 hover:scale-110 active:scale-95 transition-all duration-200"
+                >
+                  <TreeDeciduous className="w-6 h-6 text-almond" />
+                </a>
+                <a
+                  href="https://www.instagram.com/vandy.bengalis/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="VABS on Instagram"
+                  title="Instagram"
+                  className="flex items-center justify-center p-2 rounded-full bg-almond/10 hover:bg-spanish/20 hover:scale-110 active:scale-95 transition-all duration-200"
+                >
+                  <Instagram className="w-6 h-6 text-almond" />
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={scrollMostRecent}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/30 bg-gold/10 text-gold-light text-xs font-quattrocento font-bold hover:bg-gold/20 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                Most recent
+              </button>
+            </div>
           </div>
 
           {/* Carousel */}
@@ -351,11 +416,7 @@ export default function InstagramFeed() {
           </div>
 
           {/* Decorative */}
-          <div className="mt-10 flex justify-center items-center gap-8">
-            <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent motion-safe:animate-pulse-line" />
-            <div className="w-3 h-3 rounded-full bg-spanish motion-safe:animate-pulse-scale" />
-            <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-gold to-transparent motion-safe:animate-pulse-line" />
-          </div>
+          <AlponaDivider className="mx-auto mt-10 opacity-80" />
         </div>
       </div>
     </section>

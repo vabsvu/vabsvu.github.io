@@ -90,8 +90,14 @@ export function Navbar() {
               className="w-full h-full object-contain scale-150"
             />
           </span>
-          <span className="font-quattrocento font-bold text-almond text-lg tracking-wide group-hover:text-gold transition-colors">
+          <span className="font-quattrocento font-bold text-almond text-lg tracking-wide group-hover:text-gold-light transition-colors">
             VABS
+          </span>
+          <span
+            aria-hidden="true"
+            className="hidden sm:inline font-['Tiro_Bangla'] text-gold-light/70 text-sm leading-none -ml-1"
+          >
+            বাংলা
           </span>
         </button>
 
@@ -102,7 +108,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               onClick={(e) => handleAnchorClick(e, link.href)}
-              className="font-quattrocento text-almond/80 hover:text-gold transition-colors text-sm tracking-wide"
+              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-sm tracking-wide after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
             >
               {link.label}
             </a>
@@ -115,7 +121,7 @@ export function Navbar() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="VABS on Instagram"
-          className="p-2 rounded-full text-almond hover:text-gold hover:bg-gold/10 transition-colors"
+          className="p-2 rounded-full text-almond hover:text-gold-light hover:bg-gold/10 transition-colors"
         >
           <Instagram className="w-5 h-5" />
         </a>
@@ -129,7 +135,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               onClick={(e) => handleAnchorClick(e, link.href)}
-              className="font-quattrocento text-almond/80 hover:text-gold transition-colors text-xs tracking-wider whitespace-nowrap"
+              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-xs tracking-wider whitespace-nowrap after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
             >
               {link.label}
             </a>
