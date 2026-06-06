@@ -19,7 +19,9 @@ const categoryGradients: Record<EventCategory, string> = {
   other: "from-tyrian/70 to-carmine/40",
 };
 
-// Deterministic "random-feeling" tilt derived from the day number
+// Deterministic "random-feeling" tilt derived from the day number.
+// Whole-degree rotations only — fractional angles rasterize blurry at
+// thumbnail sizes.
 const ROTATIONS = [
   "-rotate-3",
   "rotate-2",
@@ -28,6 +30,12 @@ const ROTATIONS = [
   "-rotate-1",
   "rotate-1",
 ];
+
+/**
+ * Prefer the pre-sized ~192px thumbnail over the full-resolution image —
+ * downscaling a 1080px JPG into a ~40px box is what made thumbs look muddy.
+ */
+const thumbSrc = (event: CalendarEvent) => event.thumbUrl ?? event.imageUrl;
 
 interface CalendarDayProps {
   day: number;
@@ -47,7 +55,7 @@ export function CalendarDay({
   onSelectDay,
 }: CalendarDayProps) {
   const hasEvents = events.length > 0;
-  const firstWithImage = events.find((e) => e.imageUrl) ?? null;
+  const firstWithImage = events.find((e) => thumbSrc(e)) ?? null;
   const backEvent =
     events.length > 1
       ? (events.find((e) => e !== firstWithImage) ?? null)
@@ -75,7 +83,7 @@ export function CalendarDay({
       aria-label={label}
       aria-pressed={hasEvents ? isSelected : undefined}
       aria-current={isToday ? "date" : undefined}
-      className={`group relative flex flex-col items-center justify-start p-1.5 md:p-2 rounded-lg min-h-[64px] md:min-h-[84px] transition-colors duration-150 ${
+      className={`group relative flex flex-col items-center justify-start p-1.5 md:p-2 rounded-lg min-h-[68px] md:min-h-[88px] transition-colors duration-150 ${
         hasEvents ? "cursor-pointer hover:bg-gold/10" : "cursor-default"
       } ${ringClass} ${bgClass}`}
     >
@@ -90,27 +98,39 @@ export function CalendarDay({
             {day}
           </span>
 
-          {/* Photo thumbnail(s), Partiful-style */}
+          {/* Photo thumbnail(s), Partiful-style. Rotation lives on a
+              transform-gpu wrapper (exact 40px / 48px boxes) so the tilt
+              rasterizes on a GPU layer instead of smearing subpixels. */}
           <div className="relative mt-1 md:mt-1.5">
             {backEvent &&
-              (backEvent.imageUrl ? (
-                <img
-                  src={backEvent.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  className={`absolute top-0.5 left-1.5 w-9 h-9 md:w-11 md:h-11 rounded-lg object-cover ring-1 ring-almond/15 opacity-80 ${backRotation}`}
-                />
+              (thumbSrc(backEvent) ? (
+                <div
+                  className={`absolute top-0.5 left-1.5 w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden ring-1 ring-almond/15 opacity-80 transform-gpu ${backRotation}`}
+                >
+                  <img
+                    src={thumbSrc(backEvent) as string}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
               ) : (
                 <div
-                  className={`absolute top-0.5 left-1.5 w-9 h-9 md:w-11 md:h-11 rounded-lg bg-gradient-to-br ${categoryGradients[backEvent.category]} ring-1 ring-almond/15 opacity-80 ${backRotation}`}
+                  className={`absolute top-0.5 left-1.5 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br ${categoryGradients[backEvent.category]} ring-1 ring-almond/15 opacity-80 transform-gpu ${backRotation}`}
                 />
               ))}
-            <img
-              src={firstWithImage.imageUrl as string}
-              alt=""
-              loading="lazy"
-              className={`relative z-10 w-9 h-9 md:w-11 md:h-11 rounded-lg object-cover ring-1 ring-almond/25 shadow-md shadow-black/30 transition-transform duration-150 group-hover:scale-105 ${rotation}`}
-            />
+            <div
+              className={`relative z-10 w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden ring-1 ring-almond/25 shadow-md shadow-black/30 transform-gpu transition-transform duration-150 group-hover:scale-105 ${rotation}`}
+            >
+              <img
+                src={thumbSrc(firstWithImage) as string}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
           </div>
         </>
       ) : (

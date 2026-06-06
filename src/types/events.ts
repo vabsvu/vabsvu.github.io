@@ -16,7 +16,11 @@ export interface CalendarEvent {
   description?: string;
   category: EventCategory;
   imageUrl?: string;
+  /** Small (192x192) thumbnail path; UI falls back to imageUrl when absent */
+  thumbUrl?: string;
   instagramPermalink?: string;
+  /** External event page (e.g. Anchor Link event URL) */
+  eventUrl?: string;
   /** Optional host/organizer name shown on event cards (e.g. "VABS Board") */
   host?: string;
 }

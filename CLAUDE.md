@@ -15,21 +15,24 @@ pnpm dev              # Start Vite dev server
 pnpm build            # Production build (outputs to dist/)
 pnpm preview          # Preview production build
 pnpm lint             # ESLint (note: only covers .js/.jsx — .tsx is NOT linted or typechecked; no tsconfig exists)
-pnpm sync:instagram   # Refresh public/data/*.json from Instagram (see docs/INSTAGRAM_SYNC.md)
+pnpm sync:instagram   # Refresh public/data/*.json from Instagram
+pnpm sync:anchorlink  # Refresh events.json from the Anchor Link ICS feed
 ```
 
 ## Deployment
 
-**Push to `main` deploys the site.** `.github/workflows/deploy.yml` builds with pnpm and publishes `dist/` via `actions/deploy-pages` (Pages must be set to "GitHub Actions" source; the workflow's `configure-pages` step enables this itself on first run). The old `pnpm deploy` / `gh-pages` branch flow is dead — do not use it; Pages serving the raw `main` branch was the cause of a blank white live site.
+**Push to `main` deploys the site.** `.github/workflows/deploy.yml` builds with pnpm and publishes `dist/` via `actions/deploy-pages` (Pages must be set to "GitHub Actions" source; the workflow's `configure-pages` step enables this itself on first run). The old `gh-pages`-branch flow is dead and its `predeploy`/`deploy` scripts + `gh-pages` dependency have been removed — do not reintroduce them; Pages serving a raw branch was the cause of a blank white live site.
 
 ## Auto-updating content
 
 The site is data-driven from `public/data/`:
 
-- `events.json` — calendar events (`CalendarEvent[]`, see `src/types/events.ts`). Events with ids starting `ig_` are machine-generated from Instagram captions; all other ids are manually curated and never touched by the sync.
+- `events.json` — calendar events (`CalendarEvent[]`, see `src/types/events.ts`). Ids starting `ig_` are machine-generated from Instagram captions; ids starting `al_` are machine-generated from the Anchor Link ICS feed (exact details, plus `thumbUrl`/`eventUrl` fields). All other ids are manually curated and never touched by either sync.
 - `posts.json` — Instagram posts; images are downloaded to `public/images/insta/` (IG CDN URLs expire, never hotlink).
 
-`.github/workflows/sync-instagram.yml` (cron, twice daily) runs `scripts/sync-instagram.mjs` (zero-dependency Node), commits changes, and calls the deploy workflow (`workflow_call` — GITHUB_TOKEN pushes don't trigger `push:` workflows). The script's invariant: any failure exits 0 with zero file writes. Source priority: `IG_ACCESS_TOKEN` (Graph API) → `BEHOLD_FEED_URL` → public endpoint (usually blocked from CI). Officer setup docs: `docs/INSTAGRAM_SYNC.md`.
+The sync workflow (cron, twice daily) runs `scripts/sync-instagram.mjs` and `scripts/sync-anchorlink.mjs` (both zero-dependency Node), commits changes, and calls the deploy workflow (`workflow_call` — GITHUB_TOKEN pushes don't trigger `push:` workflows). Shared invariant: any failure exits 0 with zero file writes. Instagram source priority: `IG_ACCESS_TOKEN` (Graph API) → `BEHOLD_FEED_URL` → public endpoint (usually blocked from CI). Anchor Link needs no auth (public ICS at `https://anchorlink.vanderbilt.edu/organization/vabs/events.ics`, overridable via `ANCHORLINK_ICS_URL` secret).
+
+Docs layout: `docs/OFFICER_GUIDE.md` is the non-technical officer manual (posting tips, manual event edits, new-officer checklist); `docs/INSTAGRAM_SYNC.md` is the technical sync reference (token setup, source modes, troubleshooting).
 
 ## Tech Stack
 
@@ -59,6 +62,8 @@ App.tsx                     # Last-resort ErrorBoundary (full-page styled fallba
 ```
 
 Each lazy section has its **own ErrorBoundary** — one section failing must never blank the page (this happened: a WebGL context failure once took down the whole site).
+
+The Mock Shaadi-era shell components (`OpeningSequence`, `OrgShowcase`, `OrgHeader`, `AnimatedTitle`, `MobileMenu`) were deleted — don't look for or reference them.
 
 ### Chunking (vite.config.js — treat as fragile)
 

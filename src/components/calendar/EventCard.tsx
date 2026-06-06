@@ -32,6 +32,9 @@ interface EventCardProps {
  * modal via a stretched button; the Instagram link sits above it.
  */
 export function EventCard({ event, onSelect }: EventCardProps) {
+  // Prefer the pre-sized ~192px thumbnail; the full image is overkill at 64px
+  const thumb = event.thumbUrl ?? event.imageUrl;
+
   return (
     <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-black/15 border border-gold/10 hover:border-gold/30 hover:bg-black/25 transition-colors">
       {/* Stretched click target for the modal */}
@@ -43,12 +46,13 @@ export function EventCard({ event, onSelect }: EventCardProps) {
       />
 
       {/* Thumbnail (or category-colored fallback) */}
-      {event.imageUrl ? (
+      {thumb ? (
         <img
-          src={event.imageUrl}
+          src={thumb}
           alt=""
           loading="lazy"
-          className="w-16 h-16 rounded-xl object-cover ring-1 ring-almond/15 flex-shrink-0 pointer-events-none"
+          decoding="async"
+          className="w-16 h-16 rounded-xl object-cover object-center ring-1 ring-almond/15 flex-shrink-0 pointer-events-none"
         />
       ) : (
         <div

@@ -88,6 +88,24 @@ export function useCalendar(events: CalendarEvent[]) {
     return events.filter((e) => e.date.startsWith(prefix));
   }, [events, currentYear, currentMonth]);
 
+  /**
+   * The nearest events on either side of the visible month: the last two
+   * before it and the first two after it (chronological order). Feeds the
+   * "Recently & up next" strip so sparse months still feel alive.
+   */
+  const aroundMonthEvents = useMemo(() => {
+    const prefix = `${currentYear}-${pad(currentMonth + 1)}`;
+    const sorted = [...events].sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        (a.startTime ?? "").localeCompare(b.startTime ?? ""),
+    );
+    return {
+      before: sorted.filter((e) => e.date.slice(0, 7) < prefix).slice(-2),
+      after: sorted.filter((e) => e.date.slice(0, 7) > prefix).slice(0, 2),
+    };
+  }, [events, currentYear, currentMonth]);
+
   const getEventsForDay = useCallback(
     (day: number) => eventsForDate(dateStringForDay(day)),
     [eventsForDate, dateStringForDay],
@@ -168,6 +186,7 @@ export function useCalendar(events: CalendarEvent[]) {
     daysInMonth,
     firstDayOfWeek,
     monthEvents,
+    aroundMonthEvents,
     selectedEvent,
     setSelectedEvent,
     selectedDate,

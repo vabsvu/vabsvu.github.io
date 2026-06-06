@@ -1,4 +1,4 @@
-name: Sync Instagram
+name: Sync events
 
 on:
   schedule:
@@ -29,12 +29,27 @@ jobs:
         with:
           node-version: 22
 
+      - name: Check thumbnail tooling (non-fatal)
+        run: |
+          if command -v magick >/dev/null 2>&1 || command -v convert >/dev/null 2>&1; then
+            echo "ImageMagick available — thumbnails will be generated."
+          else
+            echo "ImageMagick not found — thumbnails will be skipped (sync still runs)."
+          fi
+
       - name: Sync Instagram data
         run: node scripts/sync-instagram.mjs
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_BUSINESS_ID: ${{ secrets.IG_BUSINESS_ID }}
           BEHOLD_FEED_URL: ${{ secrets.BEHOLD_FEED_URL }}
+
+      - name: Sync Anchor Link events
+        run: node scripts/sync-anchorlink.mjs
+        env:
+          # Falls back in-script to the VABS org feed when unset:
+          # https://anchorlink.vanderbilt.edu/organization/vabs/events.ics
+          ANCHORLINK_ICS_URL: ${{ secrets.ANCHORLINK_ICS_URL }}
 
       - name: Commit and push changes
         id: commit
@@ -43,14 +58,14 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add public/
-            git commit -m "chore: sync instagram data"
+            git commit -m "chore: sync events data"
             # Another push may have landed on main since checkout (e.g. an
             # officer editing events.json in the web UI) — rebase so the push
             # isn't rejected as non-fast-forward, and retry once.
             git pull --rebase origin main
             git push || (git pull --rebase origin main && git push)
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Committed and pushed updated Instagram data."
+            echo "Committed and pushed updated events data."
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No data changes — nothing to commit."

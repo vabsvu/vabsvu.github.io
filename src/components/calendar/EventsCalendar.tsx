@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig, motion } from "framer-motion";
 import { useCalendar } from "../../hooks/useCalendar";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 import { DayDetailPanel } from "./DayDetailPanel";
 import { EmptyMonthState } from "./EmptyMonthState";
+import { AroundMonthStrip } from "./AroundMonthStrip";
 import { EventListMobile } from "./EventListMobile";
 import { EventModal } from "./EventModal";
 import type { CalendarEvent, EventsData } from "../../types/events";
@@ -36,10 +37,21 @@ export default function EventsCalendar() {
 
   const calendar = useCalendar(events);
   const hasMonthEvents = calendar.monthEvents.length > 0;
+  // Key for the subtle fade-in when the visible month changes
+  const monthKey = `${calendar.currentYear}-${calendar.currentMonth}`;
 
   const jumpToNextEvent = () => {
     if (calendar.nextUpcomingDate) calendar.goToDate(calendar.nextUpcomingDate);
   };
+
+  const aroundStrip = (
+    <AroundMonthStrip
+      before={calendar.aroundMonthEvents.before}
+      after={calendar.aroundMonthEvents.after}
+      visibleYear={calendar.currentYear}
+      onGoToDate={calendar.goToDate}
+    />
+  );
 
   return (
     // reducedMotion="user": framer transforms (panel slide, modal spring)
@@ -74,17 +86,26 @@ export default function EventsCalendar() {
 
             {isDesktop ? (
               <>
-                <CalendarGrid
-                  daysInMonth={calendar.daysInMonth}
-                  firstDayOfWeek={calendar.firstDayOfWeek}
-                  monthName={calendar.monthName}
-                  selectedDay={calendar.selectedDayInMonth}
-                  getEventsForDay={calendar.getEventsForDay}
-                  isToday={calendar.isToday}
-                  onSelectDay={(day) =>
-                    calendar.setSelectedDate(calendar.dateStringForDay(day))
-                  }
-                />
+                {/* Keyed on month: quick fade-in so switching months
+                    doesn't hard-pop. No exit phase — stays snappy. */}
+                <motion.div
+                  key={monthKey}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  <CalendarGrid
+                    daysInMonth={calendar.daysInMonth}
+                    firstDayOfWeek={calendar.firstDayOfWeek}
+                    monthName={calendar.monthName}
+                    selectedDay={calendar.selectedDayInMonth}
+                    getEventsForDay={calendar.getEventsForDay}
+                    isToday={calendar.isToday}
+                    onSelectDay={(day) =>
+                      calendar.setSelectedDate(calendar.dateStringForDay(day))
+                    }
+                  />
+                </motion.div>
 
                 {hasMonthEvents ? (
                   calendar.selectedDate && (
@@ -118,19 +139,30 @@ export default function EventsCalendar() {
                       hasUpcoming={calendar.nextUpcomingDate !== null}
                       onJumpToNext={jumpToNextEvent}
                     />
+                    {aroundStrip}
                   </div>
                 )}
               </>
             ) : hasMonthEvents ? (
-              <EventListMobile
-                events={calendar.monthEvents}
-                onSelectEvent={calendar.setSelectedEvent}
-              />
+              <motion.div
+                key={monthKey}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                <EventListMobile
+                  events={calendar.monthEvents}
+                  onSelectEvent={calendar.setSelectedEvent}
+                />
+              </motion.div>
             ) : (
-              <EmptyMonthState
-                hasUpcoming={calendar.nextUpcomingDate !== null}
-                onJumpToNext={jumpToNextEvent}
-              />
+              <>
+                <EmptyMonthState
+                  hasUpcoming={calendar.nextUpcomingDate !== null}
+                  onJumpToNext={jumpToNextEvent}
+                />
+                {aroundStrip}
+              </>
             )}
           </div>
 

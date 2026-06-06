@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { CalendarEvent } from "../../types/events";
 import { EventCard } from "./EventCard";
@@ -32,18 +32,18 @@ export function DayDetailPanel({
   return (
     <div className="mt-6 pt-5 border-t border-gold/10">
       <div className="flex items-center justify-between mb-4">
-        <AnimatePresence mode="wait">
-          <motion.h4
-            key={dateStr}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="text-lg md:text-xl font-quattrocento font-bold text-almond"
-          >
-            {formatDayHeading(dateStr)}
-          </motion.h4>
-        </AnimatePresence>
+        {/* Keyed remount = instant swap + quick fade/slide in. No
+            AnimatePresence mode="wait": its exit phase added dead-time
+            when clicking between days. */}
+        <motion.h4
+          key={dateStr}
+          initial={{ opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.16, ease: "easeOut" }}
+          className="text-lg md:text-xl font-quattrocento font-bold text-almond"
+        >
+          {formatDayHeading(dateStr)}
+        </motion.h4>
 
         <div className="flex items-center gap-1">
           {/* aria-disabled (not disabled) keeps the chevrons focusable, so
@@ -74,30 +74,23 @@ export function DayDetailPanel({
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={dateStr}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18 }}
-          className="space-y-3"
-        >
-          {events.length === 0 ? (
-            <p className="text-almond/80 font-quattrocento text-sm py-2">
-              Nothing scheduled this day.
-            </p>
-          ) : (
-            events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onSelect={onSelectEvent}
-              />
-            ))
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        key={dateStr}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
+        className="space-y-3"
+      >
+        {events.length === 0 ? (
+          <p className="text-almond/80 font-quattrocento text-sm py-2">
+            Nothing scheduled this day.
+          </p>
+        ) : (
+          events.map((event) => (
+            <EventCard key={event.id} event={event} onSelect={onSelectEvent} />
+          ))
+        )}
+      </motion.div>
     </div>
   );
 }

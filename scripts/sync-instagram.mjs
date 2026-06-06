@@ -20,6 +20,7 @@
  *   node scripts/sync-instagram.mjs [--dry-run]
  */
 
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -61,13 +62,17 @@ async function fetchJson(url, headers = {}) {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status} ${res.statusText} for ${url.split("?")[0]}`);
+    throw new Error(
+      `HTTP ${res.status} ${res.statusText} for ${url.split("?")[0]}`,
+    );
   }
   const text = await res.text();
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`Response from ${url.split("?")[0]} was not JSON (got ${text.slice(0, 80)}...)`);
+    throw new Error(
+      `Response from ${url.split("?")[0]} was not JSON (got ${text.slice(0, 80)}...)`,
+    );
   }
 }
 
@@ -161,10 +166,13 @@ async function fetchFromGraphApi(token, businessId) {
     const json = await fetchJson(url);
     items = json?.data;
   }
-  if (!Array.isArray(items)) throw new Error("Graph API returned no media array");
+  if (!Array.isArray(items))
+    throw new Error("Graph API returned no media array");
 
   return items.map((item) => {
-    const shortcodeMatch = (item.permalink || "").match(/\/(?:p|reel|tv)\/([^/?]+)/);
+    const shortcodeMatch = (item.permalink || "").match(
+      /\/(?:p|reel|tv)\/([^/?]+)/,
+    );
     return {
       key: sanitizeKey(shortcodeMatch ? shortcodeMatch[1] : item.id),
       caption: item.caption || "",
@@ -188,7 +196,8 @@ async function fetchFromBehold(feedUrl) {
   }
 
   return items.map((item) => {
-    const permalink = item.permalink || `https://www.instagram.com/${IG_USERNAME}/`;
+    const permalink =
+      item.permalink || `https://www.instagram.com/${IG_USERNAME}/`;
     const shortcodeMatch = permalink.match(/\/(?:p|reel|tv)\/([^/?]+)/);
     const isVideo = (item.mediaType || "").toUpperCase() === "VIDEO";
     const imageSourceUrl =
@@ -226,7 +235,8 @@ async function fetchFromPublicEndpoint() {
     Referer: `https://www.instagram.com/${IG_USERNAME}/`,
   });
   const edges = json?.data?.user?.edge_owner_to_timeline_media?.edges;
-  if (!Array.isArray(edges)) throw new Error("Public endpoint returned no media edges");
+  if (!Array.isArray(edges))
+    throw new Error("Public endpoint returned no media edges");
 
   return edges.map(({ node }) => ({
     key: sanitizeKey(node.shortcode || node.id),
@@ -257,7 +267,10 @@ async function fetchPosts() {
 
 async function downloadImage(sourceUrl, destFile) {
   const res = await fetch(sourceUrl, {
-    headers: { "User-Agent": BROWSER_UA, Referer: "https://www.instagram.com/" },
+    headers: {
+      "User-Agent": BROWSER_UA,
+      Referer: "https://www.instagram.com/",
+    },
     redirect: "follow",
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
@@ -273,16 +286,144 @@ async function downloadImage(sourceUrl, destFile) {
 }
 
 // ---------------------------------------------------------------------------
+// Thumbnails (192x192 center crop next to the full image, <basename>_thumb.jpg)
+//
+// Best-effort: uses ImageMagick ("magick"/"convert", preinstalled on ubuntu
+// GH runners) or "sips" (macOS). When neither is available, or a generation
+// fails, the thumb is skipped silently — events simply omit thumbUrl and the
+// UI falls back to imageUrl. Thumbnailing must never fail the sync.
+// ---------------------------------------------------------------------------
+
+const THUMB_SIZE = 192;
+const TOOL_TIMEOUT_MS = 30000;
+
+function toolWorks(cmd, args) {
+  try {
+    const r = spawnSync(cmd, args, {
+      stdio: "ignore",
+      timeout: TOOL_TIMEOUT_MS,
+    });
+    return r.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+let thumbToolCache;
+function resolveThumbTool() {
+  if (thumbToolCache !== undefined) return thumbToolCache;
+  if (toolWorks("magick", ["-version"])) thumbToolCache = "magick";
+  else if (toolWorks("convert", ["-version"])) thumbToolCache = "convert";
+  else if (toolWorks("sips", ["--help"])) thumbToolCache = "sips";
+  else thumbToolCache = null;
+  log(
+    thumbToolCache
+      ? `Thumbnail tool: ${thumbToolCache}`
+      : "Thumbnail tool: none found (magick/convert/sips) — thumbnails skipped",
+  );
+  return thumbToolCache;
+}
+
+/** Write a 192x192 center-cropped JPEG thumb. Returns true on success. */
+function generateThumb(sourceFile, destFile) {
+  const tool = resolveThumbTool();
+  if (!tool) return false;
+  try {
+    if (tool === "magick" || tool === "convert") {
+      const size = `${THUMB_SIZE}x${THUMB_SIZE}`;
+      const r = spawnSync(
+        tool,
+        // resize ^ = fill (short side hits 192), then center-crop to square.
+        [
+          sourceFile,
+          "-auto-orient",
+          "-resize",
+          `${size}^`,
+          "-gravity",
+          "center",
+          "-extent",
+          size,
+          "-strip",
+          "-quality",
+          "82",
+          destFile,
+        ],
+        { stdio: "ignore", timeout: TOOL_TIMEOUT_MS },
+      );
+      return (
+        r.status === 0 &&
+        fs.existsSync(destFile) &&
+        fs.statSync(destFile).size > 0
+      );
+    }
+    // sips: probe dimensions, resample the SHORT side to 192 (so the crop
+    // covers the full square), then center-crop in place (-c crops centered).
+    const probe = spawnSync(
+      "sips",
+      ["-g", "pixelWidth", "-g", "pixelHeight", sourceFile],
+      {
+        encoding: "utf8",
+        timeout: TOOL_TIMEOUT_MS,
+      },
+    );
+    if (probe.status !== 0) return false;
+    const width = Number(/pixelWidth:\s*(\d+)/.exec(probe.stdout || "")?.[1]);
+    const height = Number(/pixelHeight:\s*(\d+)/.exec(probe.stdout || "")?.[1]);
+    if (!width || !height) return false;
+    const resampleFlag =
+      width <= height ? "--resampleWidth" : "--resampleHeight";
+    const resample = spawnSync(
+      "sips",
+      [
+        "-s",
+        "format",
+        "jpeg",
+        resampleFlag,
+        String(THUMB_SIZE),
+        sourceFile,
+        "--out",
+        destFile,
+      ],
+      { stdio: "ignore", timeout: TOOL_TIMEOUT_MS },
+    );
+    if (resample.status !== 0 || !fs.existsSync(destFile)) return false;
+    const crop = spawnSync(
+      "sips",
+      ["-c", String(THUMB_SIZE), String(THUMB_SIZE), destFile],
+      { stdio: "ignore", timeout: TOOL_TIMEOUT_MS },
+    );
+    return crop.status === 0 && fs.statSync(destFile).size > 0;
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Event extraction from captions
 // ---------------------------------------------------------------------------
 
 const MONTHS = {
-  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
 };
 const WEEKDAYS = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
-  thursday: 4, friday: 5, saturday: 6,
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
 };
 
 const MONTH_DATE_RE =
@@ -301,7 +442,10 @@ function ymd(d) {
 /** Pick a year so the event lands near (>= ~3 weeks before) the post date. */
 function inferYear(month, day, postDate) {
   const tolerance = 21 * 86400000;
-  for (const year of [postDate.getUTCFullYear(), postDate.getUTCFullYear() + 1]) {
+  for (const year of [
+    postDate.getUTCFullYear(),
+    postDate.getUTCFullYear() + 1,
+  ]) {
     const candidate = new Date(Date.UTC(year, month, day));
     if (candidate.getTime() >= postDate.getTime() - tolerance) return candidate;
   }
@@ -337,15 +481,23 @@ function extractDate(caption, postDate) {
     const d = new Date(postDate.getTime());
     const delta = (target - d.getUTCDay() + 7) % 7 || 7;
     d.setUTCDate(d.getUTCDate() + delta);
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    return new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
+    );
   }
   if (/\btomorrow\b/i.test(caption)) {
     const d = new Date(postDate.getTime() + 86400000);
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    return new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
+    );
   }
   if (/\btonight\b|\btoday\b/i.test(caption)) {
     return new Date(
-      Date.UTC(postDate.getUTCFullYear(), postDate.getUTCMonth(), postDate.getUTCDate()),
+      Date.UTC(
+        postDate.getUTCFullYear(),
+        postDate.getUTCMonth(),
+        postDate.getUTCDate(),
+      ),
     );
   }
   return null;
@@ -384,7 +536,14 @@ function extractTimes(caption) {
   if (range) {
     const endMer = range[6];
     const startMer = range[3] || endMer;
-    const resolved = resolveRange(range[1], range[2], startMer, range[4], range[5], endMer);
+    const resolved = resolveRange(
+      range[1],
+      range[2],
+      startMer,
+      range[4],
+      range[5],
+      endMer,
+    );
     if (resolved) return resolved;
   }
   // Range with explicit minutes but no am/pm (e.g. "4:30–7:30", "11:30–1:00").
@@ -392,7 +551,14 @@ function extractTimes(caption) {
   // hour is unambiguous (≤ 8), otherwise skip rather than guess.
   const bare = caption.match(TIME_RANGE_BARE_RE);
   if (bare && Number(bare[3]) >= 1 && Number(bare[3]) <= 8) {
-    const resolved = resolveRange(bare[1], bare[2], "pm", bare[3], bare[4], "pm");
+    const resolved = resolveRange(
+      bare[1],
+      bare[2],
+      "pm",
+      bare[3],
+      bare[4],
+      "pm",
+    );
     if (resolved) return resolved;
   }
   const single = caption.match(TIME_SINGLE_RE);
@@ -432,13 +598,14 @@ function inferCategory(caption) {
   const c = caption.toLowerCase();
   if (/\bshaadi\b|\bformal\b/.test(c)) return "flagship";
   if (/\bfood\b|\bdawat\b|\biftar\b/.test(c)) return "food";
-  if (/\bhenna\b|\bholud\b|\bboishakh\b|\bcultural\b/.test(c)) return "cultural";
+  if (/\bhenna\b|\bholud\b|\bboishakh\b|\bcultural\b/.test(c))
+    return "cultural";
   if (/\bgbm\b|\bmeeting\b/.test(c)) return "meeting";
   return "other";
 }
 
 /** Returns a CalendarEvent or null if the caption has no confident event date. */
-function extractEvent(post, localImageUrl) {
+function extractEvent(post, localImageUrl, localThumbUrl) {
   const caption = post.caption || "";
   if (!caption.trim()) return null;
 
@@ -466,6 +633,7 @@ function extractEvent(post, localImageUrl) {
     imageUrl: localImageUrl,
     instagramPermalink: post.permalink,
   };
+  if (localThumbUrl) event.thumbUrl = localThumbUrl;
   const location = extractLocation(caption);
   if (location) event.location = location;
   return event;
@@ -512,16 +680,42 @@ async function main() {
   const localized = [];
   for (const post of fetched) {
     const fileName = `ig_${post.key}.jpg`;
+    const thumbName = `ig_${post.key}_thumb.jpg`;
     const destFile = path.join(IMAGES_DIR, fileName);
+    const destThumb = path.join(IMAGES_DIR, thumbName);
     const localUrl = `/images/insta/${fileName}`;
+    const localThumb = `/images/insta/${thumbName}`;
+
+    // Best-effort thumb staging; returns the local thumb URL or undefined.
+    const stageThumb = (sourceFile) => {
+      if (fs.existsSync(destThumb)) return localThumb;
+      if (DRY_RUN) return undefined; // don't write during dry runs
+      const stagedThumbFile = path.join(stagingDir, thumbName);
+      if (generateThumb(sourceFile, stagedThumbFile)) {
+        stagedImages.push({ from: stagedThumbFile, to: destThumb });
+        log(`  thumb generated:  ${thumbName}`);
+        return localThumb;
+      }
+      log(`  thumb skipped:    ${thumbName} (generation unavailable/failed)`);
+      return undefined;
+    };
+
     if (fs.existsSync(destFile)) {
       log(`  image cached:     ${fileName}`);
-      localized.push({ ...post, localImageUrl: localUrl });
+      localized.push({
+        ...post,
+        localImageUrl: localUrl,
+        localThumbUrl: stageThumb(destFile),
+      });
       continue;
     }
     if (DRY_RUN) {
       log(`  image would download: ${fileName}`);
-      localized.push({ ...post, localImageUrl: localUrl });
+      localized.push({
+        ...post,
+        localImageUrl: localUrl,
+        localThumbUrl: undefined,
+      });
       continue;
     }
     try {
@@ -529,7 +723,11 @@ async function main() {
       const bytes = await downloadImage(post.imageSourceUrl, stagedFile);
       log(`  image downloaded: ${fileName} (${Math.round(bytes / 1024)} KB)`);
       stagedImages.push({ from: stagedFile, to: destFile });
-      localized.push({ ...post, localImageUrl: localUrl });
+      localized.push({
+        ...post,
+        localImageUrl: localUrl,
+        localThumbUrl: stageThumb(stagedFile),
+      });
     } catch (err) {
       log(`  image FAILED:     ${fileName} (${err.message}) — skipping post`);
     }
@@ -557,7 +755,7 @@ async function main() {
   // ---- events.json ----------------------------------------------------------
   const candidates = [];
   for (const post of localized) {
-    const event = extractEvent(post, post.localImageUrl);
+    const event = extractEvent(post, post.localImageUrl, post.localThumbUrl);
     if (event) candidates.push({ event, postTime: post.timestamp });
   }
   // Multiple posts often hype the same event (announcement, reminder,
@@ -641,7 +839,9 @@ async function main() {
   const postsChanged = contentChanged(existingPosts, newPostsData);
   const eventsChanged = contentChanged(existingEvents, newEventsData);
 
-  log(`posts.json:  ${postsChanged ? "CHANGED" : "unchanged"} (${newPostsData.posts.length} posts)`);
+  log(
+    `posts.json:  ${postsChanged ? "CHANGED" : "unchanged"} (${newPostsData.posts.length} posts)`,
+  );
   log(
     `events.json: ${eventsChanged ? "CHANGED" : "unchanged"} ` +
       `(${manualEvents.length} manual + ${freshIgEvents.length} fresh + ` +

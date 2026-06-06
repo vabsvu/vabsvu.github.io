@@ -79,6 +79,7 @@ export function EventModal({ event, onClose }: EventModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           {/* Backdrop */}
           <motion.div
@@ -95,10 +96,11 @@ export function EventModal({ event, onClose }: EventModalProps) {
             aria-modal="true"
             aria-labelledby="event-modal-title"
             className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-gradient-to-br from-[#460b2f] to-[#9a031e] border border-gold/20 shadow-2xl"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            exit={{ opacity: 0, scale: 0.97, y: 8 }}
+            // Gentle tween instead of a stiff spring — no overshoot wobble
+            transition={{ duration: 0.22, ease: "easeOut" }}
           >
             {/* Close button */}
             <button

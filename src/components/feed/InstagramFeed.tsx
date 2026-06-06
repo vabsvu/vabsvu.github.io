@@ -1,9 +1,34 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Instagram } from "lucide-react";
-import useEmblaCarousel from "embla-carousel-react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { Instagram, ChevronLeft, ChevronRight } from "lucide-react";
+import useEmblaCarousel, {
+  type UseEmblaCarouselType,
+} from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 import type { InstagramPost, PostsData } from "../../types/events";
+
+type EmblaApi = NonNullable<UseEmblaCarouselType[1]>;
+
+// Snapshot once at module load — same media query the component already
+// used; reduced-motion users get no autoplay and no focal tween.
+const REDUCED_MOTION =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Focal tween ranges: centered slide is full size/sharp/opaque, neighbors
+// recede. Blur is paint-expensive, so the radius stays small.
+const TWEEN_SCALE_RANGE = 0.12; // scale 1 -> 0.88 at the adjacent snap
+const TWEEN_BLUR_MAX = 2.5; // px at the adjacent snap and beyond
+const TWEEN_OPACITY_RANGE = 0.45; // opacity 1 -> 0.55 at the edges
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
 
 const fallbackPosts: InstagramPost[] = [
   {
@@ -46,9 +71,6 @@ export default function InstagramFeed() {
   const sectionRef = useScrollReveal();
   const [posts, setPosts] = useState<InstagramPost[]>(fallbackPosts);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [prefersReducedMotion] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
 
   useEffect(() => {
     fetch("/data/posts.json")
@@ -64,7 +86,7 @@ export default function InstagramFeed() {
   // remains fully draggable.
   const plugins = useMemo(
     () =>
-      prefersReducedMotion
+      REDUCED_MOTION
         ? []
         : [
             Autoplay({
@@ -75,7 +97,7 @@ export default function InstagramFeed() {
               rootNode: (emblaRoot: HTMLElement) => emblaRoot.parentElement!,
             }),
           ],
-    [prefersReducedMotion],
+    [],
   );
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -83,11 +105,111 @@ export default function InstagramFeed() {
       loop: true,
       align: "center",
       slidesToScroll: 1,
-      containScroll: "trimSnaps",
-      dragFree: true,
+      // dragFree momentum felt jerky and never settled on a post —
+      // snap to center instead, with a quick settle.
+      dragFree: false,
+      duration: 22,
     },
     plugins,
   );
+
+  // --- Focal tween (scale / blur / opacity by distance from center) ---
+  // Direct DOM style writes on each slide's inner wrapper; no React state,
+  // no re-renders. Pattern follows Embla's official TweenScale example,
+  // including the loop-point correction for wrapped slides.
+  const tweenNodes = useRef<HTMLElement[]>([]);
+  const rafId = useRef(0);
+
+  const setTweenNodes = useCallback((api: EmblaApi) => {
+    tweenNodes.current = api
+      .slideNodes()
+      .map((slideNode) => slideNode.firstElementChild as HTMLElement);
+  }, []);
+
+  const tweenFocal = useCallback((api: EmblaApi, eventName?: string) => {
+    const engine = api.internalEngine();
+    const scrollProgress = api.scrollProgress();
+    const snapList = api.scrollSnapList();
+    const slidesInView = api.slidesInView();
+    const isScrollEvent = eventName === "scroll";
+
+    snapList.forEach((scrollSnap, snapIndex) => {
+      let diffToTarget = scrollSnap - scrollProgress;
+      const slidesInSnap = engine.slideRegistry[snapIndex];
+
+      slidesInSnap.forEach((slideIndex) => {
+        if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
+
+        // Loop edge case: a looped slide is rendered at a shifted
+        // position, so measure its distance against the wrapped
+        // progress instead of the raw snap point.
+        if (engine.options.loop) {
+          engine.slideLooper.loopPoints.forEach((loopItem) => {
+            const target = loopItem.target();
+            if (slideIndex === loopItem.index && target !== 0) {
+              const sign = Math.sign(target);
+              if (sign === -1) {
+                diffToTarget = scrollSnap - (1 + scrollProgress);
+              }
+              if (sign === 1) {
+                diffToTarget = scrollSnap + (1 - scrollProgress);
+              }
+            }
+          });
+        }
+
+        const node = tweenNodes.current[slideIndex];
+        if (!node) return;
+
+        // 0 at the centered snap -> 1 at the adjacent snap (clamped beyond)
+        const distance = clamp(Math.abs(diffToTarget) * snapList.length, 0, 1);
+        const scale = 1 - TWEEN_SCALE_RANGE * distance;
+        const blur = TWEEN_BLUR_MAX * distance;
+        node.style.transform = `scale(${scale.toFixed(4)})`;
+        node.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
+        node.style.opacity = (1 - TWEEN_OPACITY_RANGE * distance).toFixed(3);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi || REDUCED_MOTION) return;
+
+    setTweenNodes(emblaApi);
+    tweenFocal(emblaApi);
+
+    // rAF-throttled: coalesce events that fire faster than frames.
+    const onTween = (api: EmblaApi, eventName: string) => {
+      if (rafId.current !== 0) return;
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = 0;
+        tweenFocal(api, eventName);
+      });
+    };
+    const onReInit = (api: EmblaApi) => {
+      setTweenNodes(api);
+      tweenFocal(api);
+    };
+
+    emblaApi
+      .on("scroll", onTween)
+      .on("select", onTween)
+      .on("slideFocus", onTween)
+      .on("reInit", onReInit);
+
+    return () => {
+      if (rafId.current !== 0) cancelAnimationFrame(rafId.current);
+      rafId.current = 0;
+      emblaApi
+        .off("scroll", onTween)
+        .off("select", onTween)
+        .off("slideFocus", onTween)
+        .off("reInit", onReInit);
+    };
+  }, [emblaApi, setTweenNodes, tweenFocal]);
+
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   const onVisibilityChange = useCallback(() => {
     if (emblaApi && document.visibilityState === "visible") {
@@ -134,50 +256,77 @@ export default function InstagramFeed() {
           </div>
 
           {/* Carousel */}
-          <div className="relative overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-6">
-              {posts.map((post) => (
-                <a
-                  key={post.id}
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-[0_0_85%] sm:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0 group hover:scale-[1.02] transition-transform duration-300"
-                >
-                  <div className="h-full bg-gradient-to-br from-[#992b0d]/10 to-[#e36414]/10 p-4 rounded-xl backdrop-blur-sm">
-                    <div
-                      className="relative rounded-lg overflow-hidden"
-                      style={{ aspectRatio: "1080/1350" }}
-                    >
-                      <img
-                        src={post.imageUrl}
-                        alt={post.caption}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                      {/* Hover caption overlay — pointer devices only */}
-                      <div className="touch:hidden absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <p className="text-white font-quattrocento text-sm md:text-base">
+          <div className="relative">
+            <div
+              className="overflow-hidden cursor-grab active:cursor-grabbing"
+              ref={emblaRef}
+            >
+              <div className="flex gap-6">
+                {posts.map((post) => (
+                  <a
+                    key={post.id}
+                    href={post.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-[0_0_85%] sm:flex-[0_0_46%] lg:flex-[0_0_31%] min-w-0 group hover:scale-[1.02] transition-transform duration-300"
+                  >
+                    {/* Tween node — the focal effect writes transform /
+                        filter / opacity here directly (no re-renders) */}
+                    <div className="h-full transform-gpu will-change-transform">
+                      <div className="h-full bg-gradient-to-br from-[#992b0d]/10 to-[#e36414]/10 p-4 rounded-xl backdrop-blur-sm">
+                        <div
+                          className="relative rounded-lg overflow-hidden"
+                          style={{ aspectRatio: "1080/1350" }}
+                        >
+                          <img
+                            src={post.imageUrl}
+                            alt={post.caption}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Hover caption overlay — pointer devices only */}
+                          <div className="touch:hidden absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                              <p className="text-white font-quattrocento text-sm md:text-base">
+                                {post.caption}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card meta: compact caption strip on touch + date */}
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <p className="hidden touch:block flex-1 min-w-0 truncate text-almond/70 text-xs font-quattrocento">
                             {post.caption}
+                          </p>
+                          <p className="shrink-0 ml-auto text-almond/50 text-xs font-quattrocento">
+                            {formatPostDate(post.timestamp)}
                           </p>
                         </div>
                       </div>
                     </div>
-
-                    {/* Card meta: compact caption strip on touch + date */}
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <p className="hidden touch:block flex-1 min-w-0 truncate text-almond/70 text-xs font-quattrocento">
-                        {post.caption}
-                      </p>
-                      <p className="shrink-0 ml-auto text-almond/50 text-xs font-quattrocento">
-                        {formatPostDate(post.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                ))}
+              </div>
             </div>
+
+            {/* Prev / next — pointer-friendly screens only */}
+            <button
+              type="button"
+              onClick={scrollPrev}
+              aria-label="Previous post"
+              className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-black/20 text-gold-light backdrop-blur-sm hover:bg-black/40 hover:text-almond transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={scrollNext}
+              aria-label="Next post"
+              className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-black/20 text-gold-light backdrop-blur-sm hover:bg-black/40 hover:text-almond transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Follow CTA */}

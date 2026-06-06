@@ -43,6 +43,21 @@ export function formatDayHeading(dateStr: string) {
 }
 
 /**
+ * Compact date chip: "2026-04-20" -> "Apr 20". When `referenceYear` is
+ * given and the date falls in a different year, appends it: "Apr 20 ’25".
+ */
+export function formatDateChip(dateStr: string, referenceYear?: number) {
+  const d = new Date(dateStr + "T00:00:00");
+  const base = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  return referenceYear !== undefined && d.getFullYear() !== referenceYear
+    ? `${base} ’${String(d.getFullYear()).slice(-2)}`
+    : base;
+}
+
+/**
  * Relative pill label: "Today at 6 PM", "Tomorrow at 7 PM",
  * "Yesterday at 8 PM", else "Jun 14 at 6 PM".
  */

@@ -11,7 +11,7 @@ export function EmptyMonthState({
   onJumpToNext,
 }: EmptyMonthStateProps) {
   return (
-    <div className="flex flex-col items-center text-center py-10 px-4">
+    <div className="flex flex-col items-center text-center pt-10 pb-6 px-4">
       <CalendarDays
         className="w-10 h-10 text-gold/40 mb-3"
         aria-hidden="true"

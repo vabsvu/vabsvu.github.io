@@ -1,47 +1,20 @@
-# Instagram Sync — How the Website Stays Up to Date
+# Content Sync — Technical Reference
 
-The VABS website automatically pulls the latest posts from our Instagram
-([@vandy.bengalis](https://www.instagram.com/vandy.bengalis/)) twice a day.
-It updates the **Instagram feed** on the site and tries to detect **events**
-from post captions (dates, times, locations) to fill in the events calendar.
+> **Just want to keep the site updated as an officer?** You probably want the
+> [Officer Guide](OFFICER_GUIDE.md) — it covers posting tips, editing events
+> by hand, and the new-officer checklist. This document is the technical
+> deep-dive: how the sync works internally and how to set up (or fix) the
+> Instagram connection.
 
-No one needs to touch code for this to work — but this document explains how
-it works, how to set up (or fix) the connection to Instagram, and how to add
-events by hand.
+The website pulls content from two sources, twice a day (5am & 5pm UTC):
 
----
+- **Instagram** ([@vandy.bengalis](https://www.instagram.com/vandy.bengalis/))
+  → `scripts/sync-instagram.mjs` → feed posts + best-effort event detection
+  from captions (`ig_*` event ids)
+- **Anchor Link** (VABS org events) → `scripts/sync-anchorlink.mjs` → exact
+  calendar events (`al_*` event ids), no authentication needed
 
-## How it works (the big picture)
-
-```
-  ┌─────────────┐   twice daily    ┌──────────────────────────┐
-  │   GitHub     │  (5am & 5pm UTC) │  sync script              │
-  │   schedule   │ ───────────────▶ │  scripts/sync-instagram   │
-  └─────────────┘                  │  • fetches latest 12 posts │
-                                   │  • downloads the images    │
-                                   │  • detects events in       │
-                                   │    captions                │
-                                   └────────────┬─────────────┘
-                                                │ only if something
-                                                │ actually changed
-                                   ┌────────────▼─────────────┐
-                                   │  commit to the repo       │
-                                   │  (posts.json, events.json,│
-                                   │   images)                 │
-                                   └────────────┬─────────────┘
-                                                │
-                                   ┌────────────▼─────────────┐
-                                   │  website rebuild + deploy │
-                                   │  → vabsvu.github.io       │
-                                   └──────────────────────────┘
-```
-
-Key safety property: **if anything goes wrong (Instagram blocks the request,
-a token expired, the internet hiccups), the script changes nothing.** The
-site keeps showing the last good data. A failed sync can never delete posts
-or events.
-
-The data lives in two files anyone can read:
+Both write into the same data files:
 
 - `public/data/posts.json` — the Instagram feed shown on the site
 - `public/data/events.json` — the events calendar
@@ -49,9 +22,43 @@ The data lives in two files anyone can read:
 Post images are downloaded into `public/images/insta/` so the site never
 depends on Instagram's image links (those expire after a few days).
 
+Key safety property of both scripts: **if anything goes wrong (a blocked
+request, an expired token, a network hiccup), the script changes nothing.**
+The site keeps showing the last good data. A failed sync can never delete
+posts or events. Manually-curated events (ids not starting with `ig_` or
+`al_`) are never touched — see the
+[id rules in the Officer Guide](OFFICER_GUIDE.md#the-id-rules-important).
+
 ---
 
-## The three ways the script can talk to Instagram
+## The Anchor Link source
+
+`scripts/sync-anchorlink.mjs` reads the public ICS calendar feed for the VABS
+organization:
+
+```
+https://anchorlink.vanderbilt.edu/organization/vabs/events.ics
+```
+
+- **No secret or token is required** — the feed is public.
+- Synced events get ids starting with `al_` and carry exact date, time,
+  location, and an `eventUrl` linking back to the Anchor Link event page.
+- Anchor Link details are treated as authoritative when the same event is
+  also detected from an Instagram caption.
+- If the feed URL ever changes (e.g. the org's Anchor Link slug changes),
+  set an `ANCHORLINK_ICS_URL` repository secret (**Settings → Secrets and
+  variables → Actions**) with the new URL — the script uses it instead of
+  the built-in default. No code change needed.
+
+Local run:
+
+```bash
+pnpm sync:anchorlink
+```
+
+---
+
+## The three ways the Instagram script can talk to Instagram
 
 The script tries these in order, using whichever is configured:
 
@@ -61,17 +68,17 @@ The script tries these in order, using whichever is configured:
 | 2. Behold.so feed | `BEHOLD_FEED_URL` secret | Excellent | None (free tier is enough) |
 | 3. Public endpoint | Nothing | Poor from GitHub's servers — Instagram usually blocks it | None |
 
-Right now, with **no secrets configured**, the script falls back to mode 3.
-That works fine when run from a personal laptop (`pnpm sync:instagram`), but
-Instagram usually blocks requests coming from GitHub's servers, so the
-**scheduled sync will quietly do nothing until mode 1 or mode 2 is set up.**
-Set one of them up — instructions below.
+With **no secrets configured**, the script falls back to mode 3. That works
+fine when run from a personal laptop (`pnpm sync:instagram`), but Instagram
+usually blocks requests coming from GitHub's servers, so the **scheduled
+Instagram sync will quietly do nothing until mode 1 or mode 2 is set up.**
+(The Anchor Link sync is unaffected — it needs no setup.)
 
 ---
 
 ## RECOMMENDED setup: Instagram Graph API (step by step)
 
-This is the official, supported way. It takes about 30 minutes once.
+This is the official, supported way. It takes about 15–30 minutes once.
 
 ### Step 1 — Make the VABS Instagram a Professional account
 
@@ -108,8 +115,8 @@ This is the official, supported way. It takes about 30 minutes once.
 2. Click **New repository secret**.
 3. Name: `IG_ACCESS_TOKEN` (exactly that). Value: paste the token. Save.
 
-Done. The next scheduled run (or a manual run, see below) will pull real
-posts.
+Done. The next scheduled run (or a manual run from the Actions tab) will
+pull real posts.
 
 > Optional: if you instead use the *Facebook-Page-linked* flavor of the API,
 > also add an `IG_BUSINESS_ID` secret with the Instagram Business Account ID,
@@ -135,7 +142,8 @@ The token dies after 60 days. Two ways to handle it:
   maintenance, recommended if nobody wants to babysit a token.
 
 If the token expires and nobody notices, nothing breaks — the site just
-stops getting new posts until the token is refreshed.
+stops getting new Instagram posts until the token is refreshed (and the
+Anchor Link sync keeps the calendar current regardless).
 
 ---
 
@@ -156,93 +164,42 @@ Behold keeps the Instagram connection alive itself — no 60-day token dance.
 
 ---
 
-## Triggering a sync manually
+## Running the sync
 
-You don't have to wait for the schedule:
+**From the GitHub UI:** Actions tab → select the sync workflow → **Run
+workflow** (step-by-step with screenshots-level detail in the
+[Officer Guide](OFFICER_GUIDE.md#how-the-site-stays-up-to-date)). If new
+data is found, the workflow commits it and chains the deploy workflow
+(`workflow_call` — commits made with `GITHUB_TOKEN` don't trigger `push:`
+workflows on their own).
 
-1. Open the repo on GitHub → **Actions** tab.
-2. In the left sidebar, click **"Sync Instagram"**.
-3. Click the **"Run workflow"** dropdown (right side) → green **Run
-   workflow** button.
-4. Wait a minute or two. If new data was found, a deploy starts
-   automatically and the live site updates a few minutes later.
-
-Developers can also run it locally from the repo:
+**Locally:**
 
 ```bash
-pnpm sync:instagram             # real run — updates the JSON + images
-node scripts/sync-instagram.mjs --dry-run   # preview only, writes nothing
+pnpm sync:instagram                          # real run — updates JSON + images
+node scripts/sync-instagram.mjs --dry-run    # preview only, writes nothing
+pnpm sync:anchorlink                         # Anchor Link events
 ```
 
-(Local runs use the public endpoint and usually work from a home network.
-Commit and push the changed files afterward to update the site.)
-
----
-
-## Adding or editing events by hand
-
-The automatic event detection is best-effort — captions are messy! You can
-(and should) curate `public/data/events.json` directly. Anything you add
-manually is **never touched** by the sync, as long as its `id` does **not**
-start with `ig_` (those are the auto-generated ones, which get refreshed on
-every sync).
-
-### Field reference
-
-| Field | Required | Format / meaning |
-| --- | --- | --- |
-| `id` | yes | Unique string. Use `evt_YYYYMMDD_short_name`. Must NOT start with `ig_`. |
-| `title` | yes | Event name shown on the calendar. |
-| `date` | yes | `YYYY-MM-DD` |
-| `startTime` | no | 24-hour `HH:MM`, e.g. `"19:00"` for 7 PM. |
-| `endTime` | no | 24-hour `HH:MM`. |
-| `location` | no | Free text, e.g. `"Rand Hall"`. |
-| `description` | no | A sentence or two. |
-| `category` | yes | One of: `flagship`, `social`, `cultural`, `meeting`, `food`, `other`. |
-| `imageUrl` | no | Path under `public/`, e.g. `"/images/insta/mshaadi.webp"`, or `null`. |
-| `instagramPermalink` | no | Link to the related Instagram post, or `null`. |
-
-### Example
-
-Add an object like this inside the `"events": [ ... ]` list (don't forget
-the comma between events):
-
-```json
-{
-  "id": "evt_20261105_chai_chat",
-  "title": "Chai & Chat GBM",
-  "date": "2026-11-05",
-  "startTime": "18:30",
-  "endTime": "20:00",
-  "location": "Multicultural Community Space",
-  "description": "Monthly general body meeting with free chai and snacks!",
-  "category": "meeting",
-  "imageUrl": null,
-  "instagramPermalink": null
-}
-```
-
-Easiest way to edit without any tools: open the file on GitHub
-(`public/data/events.json`) → pencil icon → edit → **Commit changes** to
-`main`. The site redeploys automatically on every push to `main`.
-
-> Tip: after editing, make sure the file is still valid JSON (GitHub's
-> editor highlights mistakes; a missing comma is the usual culprit).
+Local Instagram runs use the public endpoint and usually work from a home
+network. Commit and push the changed files afterward to update the site.
 
 ---
 
 ## Troubleshooting
 
 - **Feed hasn't updated in days** → check the Actions tab for the latest
-  "Sync Instagram" run and read its log. The script prints exactly why it
-  stopped (e.g. token expired → refresh it, see above).
-- **A wrong auto-event appeared** → auto-events come from caption parsing.
-  Either fix the wording in the next Instagram caption, or copy the event
-  into a manual entry (change its `id` so it doesn't start with `ig_`) and
-  it will stick. **Keep the event's `instagramPermalink`** (or at least its
-  `date` and `title`) when copying — the sync uses those to recognize that
-  your manual entry covers the post and to suppress the duplicate
-  auto-event on future runs.
+  sync run and read its log. The scripts print exactly why they stopped
+  (e.g. token expired → refresh it, see above).
+- **A wrong auto-event appeared** → `ig_*` events come from caption parsing,
+  which is best-effort. Either fix the wording in the next caption, or pin a
+  corrected manual copy — see the
+  [Officer Guide](OFFICER_GUIDE.md#adding-or-fixing-an-event-by-hand).
+  (Prefer creating events on Anchor Link: `al_*` events carry exact details.)
 - **The script "succeeded" but says it fetched 0 posts** → that's the public
   endpoint being blocked (expected from GitHub's servers). Set up the Graph
   API token or Behold (above).
+- **Anchor Link events stopped appearing** → check that
+  <https://anchorlink.vanderbilt.edu/organization/vabs/events.ics> still
+  loads in a browser; if the org's URL changed, set the `ANCHORLINK_ICS_URL`
+  secret (see "The Anchor Link source" above).
