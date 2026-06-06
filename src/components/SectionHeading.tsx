@@ -34,10 +34,13 @@ export function SectionHeading({
     >
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className="h-px w-12 bg-gold/40" />
-        <span lang="bn" className="font-tiroBangla text-sm text-gold-light/90">
+        <span
+          lang="bn"
+          className="font-tiroBangla text-base text-gold-light/90"
+        >
           {index}
         </span>
-        <span className="font-quattrocento text-xs uppercase tracking-[0.3em] text-gold-light/80">
+        <span className="font-quattrocento text-sm uppercase tracking-[0.3em] text-gold-light/80">
           {label}
         </span>
         {centered && (
@@ -50,7 +53,7 @@ export function SectionHeading({
       </h2>
 
       {accent && (
-        <p className="mt-2 font-instrumentSerif text-lg italic text-[#f0a36e] md:text-xl">
+        <p className="mt-2 font-instrumentSerif text-xl italic text-[#f0a36e] md:text-2xl">
           {accent}
         </p>
       )}

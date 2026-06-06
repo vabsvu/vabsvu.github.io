@@ -127,7 +127,7 @@ export function EventModal({ event, onClose }: EventModalProps) {
             {/* Content */}
             <div className="p-6">
               {/* Category badge */}
-              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-quattrocento text-almond/80 bg-gold/15 border border-gold/20 mb-3 capitalize">
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-sm font-quattrocento text-almond/80 bg-gold/15 border border-gold/20 mb-3 capitalize">
                 {event.category}
               </span>
 
@@ -140,9 +140,9 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
               <div className="space-y-2 mb-4">
                 {/* Date */}
-                <div className="flex items-center gap-2 text-almond/70">
+                <div className="flex items-center gap-2 text-almond/75">
                   <Clock className="w-4 h-4 text-gold" aria-hidden="true" />
-                  <span className="text-sm font-quattrocento">
+                  <span className="text-base font-quattrocento">
                     {formatDate(event.date)}
                     {event.startTime && `, ${formatTime(event.startTime)}`}
                     {event.endTime && ` - ${formatTime(event.endTime)}`}
@@ -151,9 +151,9 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
                 {/* Location */}
                 {event.location && (
-                  <div className="flex items-center gap-2 text-almond/70">
+                  <div className="flex items-center gap-2 text-almond/75">
                     <MapPin className="w-4 h-4 text-gold" aria-hidden="true" />
-                    <span className="text-sm font-quattrocento">
+                    <span className="text-base font-quattrocento">
                       {event.location}
                     </span>
                   </div>
@@ -161,9 +161,9 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
                 {/* Host */}
                 {event.host && (
-                  <div className="flex items-center gap-2 text-almond/70">
+                  <div className="flex items-center gap-2 text-almond/75">
                     <Users className="w-4 h-4 text-gold" aria-hidden="true" />
-                    <span className="text-sm font-quattrocento">
+                    <span className="text-base font-quattrocento">
                       Hosted by {event.host}
                     </span>
                   </div>
@@ -172,7 +172,7 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
               {/* Description */}
               {event.description && (
-                <p className="text-almond/60 text-sm font-quattrocento leading-relaxed mb-4">
+                <p className="text-almond/75 text-base font-quattrocento leading-relaxed mb-4">
                   {event.description}
                 </p>
               )}

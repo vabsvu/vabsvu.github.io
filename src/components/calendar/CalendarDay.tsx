@@ -91,7 +91,7 @@ export function CalendarDay({
         <>
           {/* Day number tucked in the corner */}
           <span
-            className={`self-start text-[10px] leading-none font-quattrocento ${
+            className={`self-start text-sm leading-none font-quattrocento ${
               isToday ? "text-gold-light font-bold" : "text-almond/80"
             }`}
           >
@@ -136,8 +136,8 @@ export function CalendarDay({
       ) : (
         <>
           <span
-            className={`text-sm font-quattrocento ${
-              isToday ? "text-gold-light font-bold" : "text-almond/70"
+            className={`text-base font-quattrocento ${
+              isToday ? "text-gold-light font-bold" : "text-almond/75"
             }`}
           >
             {day}
@@ -155,7 +155,7 @@ export function CalendarDay({
           )}
 
           {hasEvents && (
-            <p className="hidden md:block text-[10px] text-almond/80 mt-1 leading-tight text-center line-clamp-2">
+            <p className="hidden md:block text-xs text-almond/80 mt-1 leading-tight text-center line-clamp-2">
               {events[0].title}
             </p>
           )}

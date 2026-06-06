@@ -86,7 +86,7 @@ export default function PastEventShowcase() {
 
             {/* Presented by + partner orgs */}
             <div className="mt-6 text-center">
-              <p className="text-almond/70 text-xs font-quattrocento tracking-wider uppercase mb-3">
+              <p className="text-almond/70 text-sm font-quattrocento tracking-wider uppercase mb-3">
                 Presented by Vanderbilt University South Asian Organizations
               </p>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-3 md:gap-x-6 max-w-md mx-auto">
@@ -113,7 +113,7 @@ export default function PastEventShowcase() {
                         )}
                       </div>
                     </div>
-                    <span className="text-[#e2d57e] text-xs font-quattrocento font-bold opacity-70 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[#e2d57e] text-sm font-quattrocento font-bold opacity-75 group-hover:opacity-100 transition-opacity">
                       {p.name}
                     </span>
                   </a>

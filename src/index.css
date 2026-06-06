@@ -43,6 +43,13 @@
   color-scheme: dark;
 }
 
+/* Global legibility lift: Tailwind sizes/spacings are rem-based, so raising
+   the root from the 16px default scales type AND layout (max-w, padding,
+   scroll margins) proportionally (~6%) without per-class churn. */
+html {
+  font-size: 17px;
+}
+
 /* Smooth in-page anchor scrolling, only when motion is allowed */
 @media (prefers-reduced-motion: no-preference) {
   html {

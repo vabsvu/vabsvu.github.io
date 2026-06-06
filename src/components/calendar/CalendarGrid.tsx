@@ -30,7 +30,7 @@ export function CalendarGrid({
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className="text-center text-xs font-quattrocento text-almond/70 py-2"
+            className="text-center text-sm font-quattrocento text-almond/70 py-2"
           >
             {label}
           </div>

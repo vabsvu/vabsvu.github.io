@@ -37,7 +37,7 @@ export function EventListMobile({
     <div className="space-y-6">
       {groups.map(([date, dayEvents]) => (
         <div key={date}>
-          <h4 className="text-sm font-quattrocento font-bold text-almond/60 mb-2">
+          <h4 className="text-base font-quattrocento font-bold text-almond/75 mb-2">
             {formatDayHeading(date)}
           </h4>
           <div className="space-y-3">

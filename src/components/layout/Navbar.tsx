@@ -11,9 +11,7 @@ const navLinks = [
 // yet (especially on slow connections) — retry until the section appears,
 // mirroring SiteLayout's initial-hash handling, instead of dropping the click.
 export function scrollTo(href: string) {
-  const reduced = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const deadline = Date.now() + 5000;
   const tryScroll = () => {
     const el = document.querySelector(href);
@@ -108,7 +106,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               onClick={(e) => handleAnchorClick(e, link.href)}
-              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-sm tracking-wide after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-sm md:text-base tracking-wide after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
             >
               {link.label}
             </a>
@@ -129,13 +127,13 @@ export function Navbar() {
 
       {/* Mobile link row — compact horizontal scroll, no overlay */}
       <div className="md:hidden border-t border-gold/10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex items-center justify-center gap-7 px-4 py-2 min-w-max mx-auto">
+        <div className="flex items-center justify-center gap-7 px-4 py-2.5 min-w-max mx-auto">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={(e) => handleAnchorClick(e, link.href)}
-              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-xs tracking-wider whitespace-nowrap after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+              className="relative font-quattrocento text-almond/80 hover:text-gold-light transition-colors text-sm tracking-wider whitespace-nowrap after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:bg-gold-light/70 after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
             >
               {link.label}
             </a>

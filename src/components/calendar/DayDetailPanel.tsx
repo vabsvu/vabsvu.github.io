@@ -40,7 +40,7 @@ export function DayDetailPanel({
           initial={{ opacity: 0, y: 3 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.16, ease: "easeOut" }}
-          className="text-lg md:text-xl font-quattrocento font-bold text-almond"
+          className="text-xl md:text-2xl font-quattrocento font-bold text-almond"
         >
           {formatDayHeading(dateStr)}
         </motion.h4>
@@ -82,7 +82,7 @@ export function DayDetailPanel({
         className="space-y-3"
       >
         {events.length === 0 ? (
-          <p className="text-almond/80 font-quattrocento text-sm py-2">
+          <p className="text-almond/80 font-quattrocento text-base py-2">
             Nothing scheduled this day.
           </p>
         ) : (

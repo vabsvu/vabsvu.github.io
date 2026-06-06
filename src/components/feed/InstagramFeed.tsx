@@ -311,9 +311,9 @@ export default function InstagramFeed() {
               <button
                 type="button"
                 onClick={scrollMostRecent}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/30 bg-gold/10 text-gold-light text-xs font-quattrocento font-bold hover:bg-gold/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gold/30 bg-gold/10 text-gold-light text-sm font-quattrocento font-bold hover:bg-gold/20 transition-colors"
               >
-                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
                 Most recent
               </button>
             </div>
@@ -355,7 +355,7 @@ export default function InstagramFeed() {
                           {/* Hover caption overlay — pointer devices only */}
                           <div className="touch:hidden absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <div className="absolute bottom-0 left-0 right-0 p-4">
-                              <p className="text-white font-quattrocento text-sm md:text-base">
+                              <p className="text-white font-quattrocento text-base md:text-lg leading-relaxed">
                                 {post.caption}
                               </p>
                             </div>
@@ -364,10 +364,10 @@ export default function InstagramFeed() {
 
                         {/* Card meta: compact caption strip on touch + date */}
                         <div className="mt-3 flex items-center justify-between gap-3">
-                          <p className="hidden touch:block flex-1 min-w-0 truncate text-almond/70 text-xs font-quattrocento">
+                          <p className="hidden touch:block flex-1 min-w-0 truncate text-almond/75 text-sm font-quattrocento">
                             {post.caption}
                           </p>
-                          <p className="shrink-0 ml-auto text-almond/50 text-xs font-quattrocento">
+                          <p className="shrink-0 ml-auto text-almond/60 text-sm font-quattrocento">
                             {formatPostDate(post.timestamp)}
                           </p>
                         </div>
@@ -403,13 +403,13 @@ export default function InstagramFeed() {
               href="https://www.instagram.com/vandy.bengalis/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-spanish/20 to-gold/20 border border-gold/20 text-almond font-quattrocento text-sm hover:border-gold/40 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-spanish/20 to-gold/20 border border-gold/20 text-almond font-quattrocento text-base hover:border-gold/40 transition-colors"
             >
               <Instagram className="w-4 h-4" />
               Follow @vandy.bengalis
             </a>
             {syncedLabel && (
-              <p className="mt-3 text-almond/40 text-xs font-quattrocento tracking-wide">
+              <p className="mt-3 text-almond/60 text-sm font-quattrocento tracking-wide">
                 Synced from Instagram · {syncedLabel}
               </p>
             )}

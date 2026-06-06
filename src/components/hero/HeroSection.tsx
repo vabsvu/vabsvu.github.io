@@ -126,7 +126,9 @@ export function HeroSection() {
           {/* Eyebrow */}
           <div className="hero-eyebrow flex items-center gap-3 mb-3">
             <span className="h-px w-12 bg-gold/40" aria-hidden="true" />
-            <span className="font-quattrocento uppercase tracking-[0.3em] text-xs text-gold-light/80">
+            {/* tracking-[0.25em] on mobile: at text-sm the 21-char label plus
+                rule + gap brushes the 390px content width at 0.3em tracking */}
+            <span className="font-quattrocento uppercase tracking-[0.25em] md:tracking-[0.3em] text-sm text-gold-light/80">
               Vanderbilt University
             </span>
           </div>
@@ -135,8 +137,7 @@ export function HeroSection() {
           <h1
             className="hero-title text-7xl md:text-8xl lg:text-9xl font-quattrocento font-bold tracking-tight leading-none mb-3 md:mb-4 motion-safe:animate-gradient-pan"
             style={{
-              background:
-                "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
+              background: "linear-gradient(90deg, #bf9b30, #e36414, #bf9b30)",
               backgroundSize: "200% auto",
               color: "transparent",
               backgroundClip: "text",
@@ -162,7 +163,7 @@ export function HeroSection() {
               <br />
               কোনো দোষ নেই
             </p>
-            <p className="font-instrumentSerif italic text-gold-light text-base mt-3">
+            <p className="font-instrumentSerif italic text-gold-light text-lg mt-3">
               "A good heart has no faults."
             </p>
           </div>
@@ -170,7 +171,7 @@ export function HeroSection() {
 
         {/* Left column — mission + next event */}
         <div className="md:col-span-7">
-          <p className="hero-mission font-quattrocento text-almond/70 text-sm md:text-base max-w-md">
+          <p className="hero-mission font-quattrocento text-almond/75 text-base md:text-lg leading-relaxed max-w-md">
             Celebrating Bengali culture, building community, and sharing
             traditions at Vanderbilt University.
           </p>
@@ -187,14 +188,14 @@ export function HeroSection() {
                     : "smooth",
                 })
               }
-              className="hero-cta mt-6 md:mt-8 inline-flex items-center gap-3 px-6 py-3 rounded-sm border border-gold-light/40 bg-tyrian/30 backdrop-blur-sm hover:border-gold-light/80 hover:bg-gold-light/5 transition-all duration-300 group"
+              className="hero-cta mt-5 md:mt-8 inline-flex items-center gap-3 px-6 py-3 rounded-sm border border-gold-light/40 bg-tyrian/30 backdrop-blur-sm hover:border-gold-light/80 hover:bg-gold-light/5 transition-all duration-300 group"
             >
               <CalendarDays className="w-5 h-5 text-gold-light" />
               <div className="text-left">
-                <p className="text-almond text-sm font-quattrocento font-bold">
+                <p className="text-almond text-base font-quattrocento font-bold">
                   {nextEvent.title}
                 </p>
-                <p className="text-almond/70 text-xs font-quattrocento">
+                <p className="text-almond/70 text-sm font-quattrocento">
                   {formatDate(nextEvent.date, nextEvent.startTime)}
                   {nextEvent.location && ` — ${nextEvent.location}`}
                 </p>

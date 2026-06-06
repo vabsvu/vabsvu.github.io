@@ -26,7 +26,7 @@ function StripRow({
   onGoToDate: (dateStr: string) => void;
 }) {
   const chipClass = isPast
-    ? "bg-almond/10 border-almond/20 text-almond/70"
+    ? "bg-almond/10 border-almond/20 text-almond/75"
     : "bg-gold/15 border-gold/30 text-gold-light";
 
   return (
@@ -37,16 +37,16 @@ function StripRow({
         className="group flex w-full items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-gold/10 transition-colors"
       >
         <span
-          className={`shrink-0 min-w-[3.5rem] text-center px-2 py-1 rounded-md border text-[11px] leading-none font-quattrocento font-bold ${chipClass}`}
+          className={`shrink-0 min-w-[3.5rem] text-center px-2 py-1 rounded-md border text-sm leading-none font-quattrocento font-bold ${chipClass}`}
         >
           {formatDateChip(event.date, visibleYear)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-quattrocento font-bold text-almond group-hover:text-gold-light transition-colors">
+          <span className="block truncate text-base font-quattrocento font-bold text-almond group-hover:text-gold-light transition-colors">
             {event.title}
           </span>
           {event.location && (
-            <span className="block truncate text-xs font-quattrocento text-almond/70">
+            <span className="block truncate text-sm font-quattrocento text-almond/70">
               {event.location}
             </span>
           )}
@@ -83,7 +83,7 @@ export function AroundMonthStrip({
 
   return (
     <div className="mt-2 pb-4 px-2">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-almond/70 font-quattrocento text-center mb-3">
+      <p className="text-sm uppercase tracking-[0.2em] text-almond/70 font-quattrocento text-center mb-3">
         {title}
       </p>
       <ul className="max-w-md mx-auto space-y-1">

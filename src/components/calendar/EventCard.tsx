@@ -64,21 +64,21 @@ export function EventCard({ event, onSelect }: EventCardProps) {
 
       <div className="min-w-0 flex-1 pointer-events-none">
         <span
-          className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-quattrocento font-bold ${pillStyles[event.category]}`}
+          className={`inline-block px-2 py-0.5 rounded-full text-sm font-quattrocento font-bold ${pillStyles[event.category]}`}
         >
           {relativeDateLabel(event.date, event.startTime)}
         </span>
 
-        <p className="mt-1 text-almond font-quattrocento font-bold text-sm md:text-base leading-snug truncate">
+        <p className="mt-1 text-almond font-quattrocento font-bold text-base md:text-lg leading-snug truncate">
           {event.title}
         </p>
 
         {(event.location || event.host) && (
-          <p className="mt-0.5 flex items-center gap-1.5 text-almond/55 text-xs font-quattrocento">
+          <p className="mt-0.5 flex items-center gap-1.5 text-almond/60 text-sm font-quattrocento">
             {event.location && (
               <>
                 <MapPin
-                  className="w-3 h-3 text-gold flex-shrink-0"
+                  className="w-3.5 h-3.5 text-gold flex-shrink-0"
                   aria-hidden="true"
                 />
                 <span className="truncate">{event.location}</span>
@@ -97,9 +97,9 @@ export function EventCard({ event, onSelect }: EventCardProps) {
             href={event.instagramPermalink}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative z-10 pointer-events-auto mt-1 inline-flex items-center gap-1 text-gold-light hover:text-spanish text-[11px] font-quattrocento transition-colors"
+            className="relative z-10 pointer-events-auto mt-1 inline-flex items-center gap-1 text-gold-light hover:text-spanish text-sm font-quattrocento transition-colors"
           >
-            <Instagram className="w-3 h-3" aria-hidden="true" />
+            <Instagram className="w-3.5 h-3.5" aria-hidden="true" />
             View on Instagram
           </a>
         )}
