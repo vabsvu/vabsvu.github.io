@@ -331,17 +331,23 @@ export default function InstagramFeed() {
                   slides visibly jump into place at the seam. */}
               <div className="flex -ml-6">
                 {posts.map((post) => (
+                  /* CRITICAL: no transform/transition classes on the slide
+                     element itself — Embla's loop teleports wrapped slides
+                     via an inline translate3d, and a CSS transition here
+                     animates that teleport (cards visibly "fly in" from the
+                     wrong direction at the seam). Hover scale lives on the
+                     card inside instead. */
                   <a
                     key={post.id}
                     href={post.permalink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-[0_0_85%] sm:flex-[0_0_46%] lg:flex-[0_0_31%] min-w-0 pl-6 group hover:scale-[1.02] transition-transform duration-300"
+                    className="flex-[0_0_85%] sm:flex-[0_0_46%] lg:flex-[0_0_31%] min-w-0 pl-6 group"
                   >
                     {/* Tween node — the focal effect writes transform /
                         opacity here directly (no re-renders) */}
                     <div className="h-full transform-gpu">
-                      <div className="h-full bg-gradient-to-br from-[#992b0d]/10 to-[#e36414]/10 p-4 rounded-xl backdrop-blur-sm">
+                      <div className="h-full bg-gradient-to-br from-[#992b0d]/10 to-[#e36414]/10 p-4 rounded-xl backdrop-blur-sm transition-transform duration-300 group-hover:scale-[1.02]">
                         <div
                           className="relative rounded-lg overflow-hidden"
                           style={{ aspectRatio: "1080/1350" }}
