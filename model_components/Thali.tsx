@@ -228,4 +228,6 @@ export default function Thali(
   );
 }
 
-useGLTF.preload("/models/thali/thali.gltf");
+// Note: no `useGLTF.preload` here on purpose — the model (gltf + bin +
+// textures) should only be fetched once the Canvas actually mounts, which
+// AnimatedFood defers until the section nears the viewport.

@@ -1,0 +1,66 @@
+name: Sync Instagram
+
+on:
+  schedule:
+    # Twice daily: 05:00 and 17:00 UTC (midnight and noon in Nashville, roughly)
+    - cron: "0 5,17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-instagram
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync Instagram data
+        run: node scripts/sync-instagram.mjs
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_BUSINESS_ID: ${{ secrets.IG_BUSINESS_ID }}
+          BEHOLD_FEED_URL: ${{ secrets.BEHOLD_FEED_URL }}
+
+      - name: Commit and push changes
+        id: commit
+        run: |
+          if [ -n "$(git status --porcelain -- public/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/
+            git commit -m "chore: sync instagram data"
+            # Another push may have landed on main since checkout (e.g. an
+            # officer editing events.json in the web UI) — rebase so the push
+            # isn't rejected as non-fast-forward, and retry once.
+            git pull --rebase origin main
+            git push || (git pull --rebase origin main && git push)
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Committed and pushed updated Instagram data."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No data changes — nothing to commit."
+          fi
+
+  deploy:
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

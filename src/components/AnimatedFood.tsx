@@ -1,16 +1,46 @@
-import React, {
-  Suspense,
-  useRef,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { Suspense, useRef, useState, useEffect, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import Model from "../../model_components/Thali";
 import { Environment } from "@react-three/drei";
 import { motion } from "framer-motion";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { useIsVisible } from "../hooks/useIsVisible";
+
+// Module-level memoized WebGL capability probe. Runs at most once per page
+// load; if the device/browser can't create a context we never mount <Canvas>.
+let webglSupported: boolean | null = null;
+function isWebGLSupported(): boolean {
+  if (webglSupported !== null) return webglSupported;
+  try {
+    const probe = document.createElement("canvas");
+    const gl =
+      probe.getContext("webgl2") ||
+      (probe.getContext("webgl") as WebGLRenderingContext | null);
+    webglSupported = Boolean(gl);
+    if (gl) {
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+    }
+  } catch {
+    webglSupported = false;
+  }
+  return webglSupported;
+}
+
+// Static stand-in for the 3D thali: same footprint as the Canvas, so the
+// bento grid still looks complete when WebGL is unavailable or crashes.
+function ThaliFallback() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <img
+        src="/textures/plate.jpeg"
+        alt="A traditional Bengali thali plate"
+        loading="lazy"
+        className="w-[130px] h-[130px] rounded-full object-cover shadow-lg ring-2 ring-gold/60"
+      />
+    </div>
+  );
+}
 
 const vec = new THREE.Vector3();
 
@@ -136,6 +166,19 @@ function getScaleFactor(width: number) {
 }
 
 export default function AnimatedFood() {
+  const canvasHostRef = useRef<HTMLDivElement>(null);
+  const isNearViewport = useIsVisible(canvasHostRef, "250px");
+  const [webglOk] = useState(() => isWebGLSupported());
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Latch: mount the Canvas the first time it nears the viewport, then keep
+  // it mounted (frameloop pauses off-screen instead of unmount thrash).
+  useEffect(() => {
+    if (isNearViewport && !hasMounted) {
+      setHasMounted(true);
+    }
+  }, [isNearViewport, hasMounted]);
+
   return (
     <div className="h-full w-full relative">
       {/* Large background gradient */}
@@ -232,30 +275,44 @@ export default function AnimatedFood() {
           </div>
         </div>
 
-        {/* ThreeJS Model */}
-        <div className="absolute w-full h-[150px] z-20  flex items-center justify-center">
-          <Canvas
-            camera={{
-              position: [0, 0, 2.5],
-              fov: 35,
-              near: 0.1,
-              far: 100,
-            }}
-            gl={{
-              antialias: true,
-              toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.5,
-              outputColorSpace: THREE.SRGBColorSpace,
-            }}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              zIndex: 20,
-            }}
-          >
-            <Scene />
-          </Canvas>
+        {/* ThreeJS Model — fixed-height host, so swapping placeholder /
+            fallback / Canvas never shifts layout */}
+        <div
+          ref={canvasHostRef}
+          className="absolute w-full h-[150px] z-20  flex items-center justify-center"
+        >
+          {!webglOk ? (
+            <ThaliFallback />
+          ) : hasMounted ? (
+            <ErrorBoundary label="thali-3d" fallback={<ThaliFallback />}>
+              <Canvas
+                frameloop={isNearViewport ? "always" : "never"}
+                camera={{
+                  position: [0, 0, 2.5],
+                  fov: 35,
+                  near: 0.1,
+                  far: 100,
+                }}
+                gl={{
+                  antialias: true,
+                  toneMapping: THREE.ACESFilmicToneMapping,
+                  toneMappingExposure: 1.5,
+                  outputColorSpace: THREE.SRGBColorSpace,
+                }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  zIndex: 20,
+                }}
+              >
+                <Scene />
+              </Canvas>
+            </ErrorBoundary>
+          ) : (
+            // Lightweight placeholder until the section nears the viewport.
+            <div className="w-full h-full" aria-hidden="true" />
+          )}
         </div>
       </div>
     </div>

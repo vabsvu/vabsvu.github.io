@@ -10,6 +10,7 @@ export default {
         marqueeReverse2: "marqueeReverse2 25s linear infinite",
         "pulse-scale": "pulse-scale 2s ease-in-out infinite",
         "pulse-line": "pulse-line 2s ease-in-out infinite",
+        "gradient-pan": "gradient-pan 8s ease-in-out infinite",
       },
       keyframes: {
         marquee: {
@@ -37,12 +38,24 @@ export default {
           "0%, 100%": { transform: "scaleX(1)", opacity: "0.5" },
           "50%": { transform: "scaleX(1.2)", opacity: "1" },
         },
+        "gradient-pan": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+      },
+      screens: {
+        // Devices without hover (phones/tablets) — used for permanent
+        // caption strips where hover overlays can't be reached
+        touch: { raw: "(hover: none)" },
       },
       colors: {
         tyrian: "#460b2f",
         carmine: "#9a031e",
         spanish: "#e36414",
         gold: "#bf9b30",
+        // Lighter champagne gold for small text on carmine/maroon surfaces —
+        // #bf9b30 fails WCAG AA there; this clears 4.5:1 while staying on-palette.
+        "gold-light": "#edd87f",
         almond: "#eae0d5",
       },
       fontFamily: {

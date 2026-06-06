@@ -16,3 +16,6 @@ package-lock.json
 # IDE
 .vscode/
 .idea/
+
+# Claude Code local state
+.claude/

@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The page background gradient is set inline (index.html / App shell) to
+   avoid a white flash — intentionally no background-color here. */
+:root {
+  color-scheme: dark;
+}
+
+/* Smooth in-page anchor scrolling, only when motion is allowed */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Keep anchor targets clear of the fixed navbar
+   (taller on mobile because of the secondary link row) */
+section[id] {
+  scroll-margin-top: 7rem;
+}
+
+@media (min-width: 768px) {
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+}
+
+/* On-palette text selection (gold on almond) */
+::selection {
+  background-color: rgba(191, 155, 48, 0.4);
+  color: #eae0d5;
+}
+
 body {
   margin: 0;
   font-family:

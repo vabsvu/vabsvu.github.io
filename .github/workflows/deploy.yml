@@ -1,0 +1,87 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Allows the Instagram sync workflow to trigger a deploy after committing
+  # data — commits made with GITHUB_TOKEN do not trigger push workflows.
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Always build the tip of main — when invoked via workflow_call from
+          # the Instagram sync (which just pushed a data commit), the default
+          # github.sha would point at the stale pre-sync commit.
+          ref: main
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Ensure Pages uses workflow builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          build_type=$(gh api "repos/${{ github.repository }}/pages" --jq .build_type 2>/dev/null || echo "none")
+          if [ "$build_type" = "legacy" ]; then
+            if gh api -X PUT "repos/${{ github.repository }}/pages" -f build_type=workflow; then
+              echo "Switched Pages from legacy branch-serving to workflow builds."
+            else
+              echo "::warning::Pages is still 'legacy' (serving raw branch source) and this token cannot change it. A repo admin must set Settings -> Pages -> Source -> 'GitHub Actions' once; until then GitHub's internal legacy build races this deploy."
+            fi
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          # enablement only CREATES a Pages site when none exists (useful for
+          # fork bootstrap) — it CANNOT migrate an existing site off legacy
+          # branch-serving. If the repo is still serving raw source from a
+          # branch, switch it once by hand: Settings → Pages → Source →
+          # "GitHub Actions" (otherwise every push also triggers GitHub's
+          # internal legacy build, which races this workflow's deploy).
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

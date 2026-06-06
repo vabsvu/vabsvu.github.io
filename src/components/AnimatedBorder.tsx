@@ -1,143 +1,195 @@
-import React, { useEffect, useState, ReactNode } from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import React, { useRef, useEffect, ReactNode } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+gsap.registerPlugin(useGSAP);
 
 interface AnimatedBorderProps {
   children: ReactNode;
   className?: string;
-  isMainContentVisible?: boolean;
 }
+
+// --- Path data (computed once at module level) ---
+
+interface PathDef {
+  d: string;
+  sw: number;
+  cls: string;
+}
+
+const borderPaths: PathDef[] = (() => {
+  const p: PathDef[] = [];
+  const f = (n: number) => +n.toFixed(1);
+
+  // Center petals (8 curves radiating from center)
+  for (let i = 0; i < 8; i++) {
+    const a = (i * 45 * Math.PI) / 180;
+    const o = a + Math.PI / 3;
+    p.push({
+      d: `M ${f(50 + 2 * Math.cos(a))},${f(50 + 2 * Math.sin(a))} Q ${f(50 + 5.5 * Math.cos(a) + 1.5 * Math.cos(o))},${f(50 + 5.5 * Math.sin(a) + 1.5 * Math.sin(o))} ${f(50 + 9 * Math.cos(a))},${f(50 + 9 * Math.sin(a))}`,
+      sw: 0.2,
+      cls: "bp-c",
+    });
+  }
+
+  // Main vines (center to corners)
+  for (const d of [
+    "M 46,44 C 38,36 26,40 16,28 C 10,20 6,12 3,5",
+    "M 54,44 C 62,36 74,40 84,28 C 90,20 94,12 97,5",
+    "M 46,56 C 38,64 26,60 16,72 C 10,80 6,88 3,95",
+    "M 54,56 C 62,64 74,60 84,72 C 90,80 94,88 97,95",
+  ]) p.push({ d, sw: 0.24, cls: "bp-v" });
+
+  // Secondary vines
+  for (const d of [
+    "M 44,46 C 34,40 22,46 12,36 C 6,30 4,20 2,10",
+    "M 56,46 C 66,40 78,46 88,36 C 94,30 96,20 98,10",
+    "M 44,54 C 34,60 22,54 12,64 C 6,70 4,80 2,90",
+    "M 56,54 C 66,60 78,54 88,64 C 94,70 96,80 98,90",
+  ]) p.push({ d, sw: 0.16, cls: "bp-v2" });
+
+  // Leaf accents
+  for (const d of [
+    "M 30,36 c -3,-2 -4,0 -2,3",
+    "M 20,30 c -2,-3 -4,-1 -2,2",
+    "M 10,18 c -2,-2 -3,1 -1,3",
+    "M 70,36 c 3,-2 4,0 2,3",
+    "M 80,30 c 2,-3 4,-1 2,2",
+    "M 90,18 c 2,-2 3,1 1,3",
+    "M 30,64 c -3,2 -4,0 -2,-3",
+    "M 20,70 c -2,3 -4,1 -2,-2",
+    "M 10,82 c -2,2 -3,-1 -1,-3",
+    "M 70,64 c 3,2 4,0 2,-3",
+    "M 80,70 c 2,3 4,1 2,-2",
+    "M 90,82 c 2,2 3,-1 1,-3",
+  ]) p.push({ d, sw: 0.12, cls: "bp-l" });
+
+  // Edge curves
+  for (const d of [
+    "M 6,3 C 18,7 28,1 40,4 C 50,6 60,2 72,5 C 82,7 92,3 97,4",
+    "M 3,97 C 15,93 25,99 38,96 C 50,94 62,98 74,95 C 84,93 94,97 97,96",
+    "M 3,6 C 6,18 1,30 4,42 C 6,52 2,62 4,74 C 6,84 3,92 3,97",
+    "M 97,3 C 94,15 99,28 96,40 C 94,50 98,62 96,74 C 94,84 97,92 97,97",
+  ]) p.push({ d, sw: 0.14, cls: "bp-e" });
+
+  // Corner curls
+  for (const d of [
+    "M 3,3 c 3,2 5,6 3,9 c -3,2 -5,-2 -3,-5",
+    "M 97,3 c -3,2 -5,6 -3,9 c 3,2 5,-2 3,-5",
+    "M 3,97 c 3,-2 5,-6 3,-9 c -3,-2 -5,2 -3,5",
+    "M 97,97 c -3,-2 -5,-6 -3,-9 c 3,-2 5,2 3,5",
+    "M 5,5 c 5,3 8,8 5,13 c -4,3 -7,-1 -5,-5",
+    "M 95,5 c -5,3 -8,8 -5,13 c 4,3 7,-1 5,-5",
+    "M 5,95 c 5,-3 8,-8 5,-13 c -4,-3 -7,1 -5,5",
+    "M 95,95 c -5,-3 -8,-8 -5,-13 c 4,-3 7,1 5,5",
+  ]) p.push({ d, sw: 0.18, cls: "bp-cr" });
+
+  // Dot accents
+  for (const [x, y] of [
+    [50, 42], [50, 58], [42, 50], [58, 50],
+    [35, 35], [65, 35], [35, 65], [65, 65],
+    [20, 20], [80, 20], [20, 80], [80, 80],
+  ] as [number, number][])
+    p.push({
+      d: `M ${x - 0.7},${y} a 0.7,0.7 0 1,0 1.4,0 a 0.7,0.7 0 1,0 -1.4,0`,
+      sw: 0.1,
+      cls: "bp-d",
+    });
+
+  return p;
+})();
+
+// --- Component ---
 
 const AnimatedBorder: React.FC<AnimatedBorderProps> = ({
   children,
   className = "",
-  isMainContentVisible = false,
 }) => {
-  const [isClient, setIsClient] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const pathLength = useSpring(scrollYProgress, {
-    stiffness: 400,
-    damping: 90,
-  });
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  // Adjust opacity based on both scroll position and main content visibility
-  const baseOpacity = isMainContentVisible ? 0.3 : 1;
-  const borderOpacity = useTransform(
-    pathLength,
-    [0, 0.5, 1],
-    [baseOpacity, baseOpacity * 0.6, baseOpacity * 0.3],
+  // GSAP draw animation — 7 grouped tweens instead of 50+ individual FM animations
+  useGSAP(
+    () => {
+      const svg = svgRef.current;
+      if (!svg) return;
+
+      // Set up stroke-dash on all paths at once
+      svg.querySelectorAll("path[class]").forEach((el) => {
+        const path = el as SVGPathElement;
+        const len = path.getTotalLength();
+        gsap.set(path, {
+          strokeDasharray: len,
+          strokeDashoffset: len,
+          opacity: 0,
+        });
+      });
+
+      const defaults = { ease: "power2.inOut" };
+      const tl = gsap.timeline({ defaults });
+
+      tl.to(".bp-c", { strokeDashoffset: 0, opacity: 1, stagger: 0.04, duration: 0.8 }, 0);
+      tl.to(".bp-v", { strokeDashoffset: 0, opacity: 1, stagger: 0.08, duration: 1.6 }, 0.3);
+      tl.to(".bp-v2", { strokeDashoffset: 0, opacity: 1, stagger: 0.06, duration: 1.4 }, 0.5);
+      tl.to(".bp-d", { strokeDashoffset: 0, opacity: 1, stagger: 0.03, duration: 0.3 }, 0.4);
+      tl.to(".bp-l", { strokeDashoffset: 0, opacity: 1, stagger: 0.04, duration: 0.4 }, 0.8);
+      tl.to(".bp-e", { strokeDashoffset: 0, opacity: 1, stagger: 0.06, duration: 1.0 }, 1.2);
+      tl.to(".bp-cr", { strokeDashoffset: 0, opacity: 1, stagger: 0.05, duration: 0.7 }, 1.5);
+    },
+    { scope: overlayRef },
   );
 
+  // Scroll-linked opacity on the container (vanilla JS, RAF-throttled)
   useEffect(() => {
-    setIsClient(true);
+    const el = overlayRef.current;
+    if (!el) return;
+    let raf: number;
+
+    const update = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      const t = h > 0 ? Math.min(window.scrollY / h, 1) : 0;
+      el.style.opacity = String(0.3 * (1 - t * 0.7));
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
     <div className={`relative ${className}`}>
-      {/* SVG Border Container */}
-      <div className="fixed inset-0 pointer-events-none z-50">
+      {/* SVG border — behind content */}
+      <div
+        ref={overlayRef}
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{ opacity: 0.3 }}
+      >
         <svg
+          ref={svgRef}
           className="w-full h-full"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          // src/components/opening_border/henna_border.svg
         >
-          {/* Henna-inspired corner patterns */}
-          {[
-            [0, 0], // Top-left
-            [100, 0], // Top-right
-            [0, 100], // Bottom-left
-            [100, 100], // Bottom-right
-          ].map(([x, y], index) => (
-            <motion.path
-              key={`henna-corner-${index}`}
-              d={`
-                M ${x},${y}
-                c ${x === 0 ? "10" : "-10"},0 ${x === 0 ? "15" : "-15"},5 ${x === 0 ? "20" : "-20"},10
-                c ${x === 0 ? "-5" : "5"},-3 ${x === 0 ? "-8" : "8"},-6 ${x === 0 ? "-10" : "10"},-8
-                c ${x === 0 ? "8" : "-8"},4 ${x === 0 ? "12" : "-12"},8 ${x === 0 ? "15" : "-15"},12
-                c ${x === 0 ? "-12" : "12"},-6 ${x === 0 ? "-18" : "18"},-12 ${x === 0 ? "-20" : "20"},-15
-                ${y === 0 ? "c 0,8 -2,15 -5,20" : "c 0,-8 -2,-15 -5,-20"}
-                ${y === 0 ? "c 5,0 10,-2 15,-5" : "c 5,0 10,2 15,5"}
-              `}
+          {borderPaths.map((p, i) => (
+            <path
+              key={i}
+              className={p.cls}
+              d={p.d}
               stroke="url(#borderGradient)"
-              strokeWidth="0.3"
+              strokeWidth={p.sw}
+              strokeLinecap="round"
               fill="none"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              style={{ opacity: borderOpacity }}
-              transition={{
-                duration: 2,
-                ease: "easeInOut",
-                delay: index * 0.2,
-              }}
             />
           ))}
-
-          {/* Henna-inspired patterns along the sides */}
-          {[0, 100].map((pos, index) => (
-            <React.Fragment key={`henna-side-${index}`}>
-              {/* Vertical patterns */}
-              <motion.path
-                d={`
-                  M ${pos},20 
-                  c ${pos === 0 ? "10" : "-10"},5 ${pos === 0 ? "5" : "-5"},15 ${pos === 0 ? "15" : "-15"},20
-                  c ${pos === 0 ? "-10" : "10"},-5 ${pos === 0 ? "-5" : "5"},-15 ${pos === 0 ? "-15" : "15"},-20
-                  m 0,30
-                  c ${pos === 0 ? "8" : "-8"},3 ${pos === 0 ? "4" : "-4"},9 ${pos === 0 ? "12" : "-12"},12
-                  c ${pos === 0 ? "-8" : "8"},-3 ${pos === 0 ? "-4" : "4"},-9 ${pos === 0 ? "-12" : "12"},-12
-                  m 0,30
-                  c ${pos === 0 ? "10" : "-10"},5 ${pos === 0 ? "5" : "-5"},15 ${pos === 0 ? "15" : "-15"},20
-                  c ${pos === 0 ? "-10" : "10"},-5 ${pos === 0 ? "-5" : "5"},-15 ${pos === 0 ? "-15" : "15"},-20
-                `}
-                stroke="url(#borderGradient)"
-                strokeWidth="0.3"
-                fill="none"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                style={{ opacity: borderOpacity }}
-                transition={{
-                  duration: 1.5,
-                  ease: "easeInOut",
-                  delay: 1 + index * 0.3,
-                }}
-              />
-            </React.Fragment>
-          ))}
-
-          {/* Decorative flower patterns */}
-          {[25, 75].map((y, index) => (
-            <motion.path
-              key={`flower-${index}`}
-              d={`
-                M 0,${y} 
-                c 5,0 8,-5 10,-8
-                s 5,-5 8,-5
-                s 6,3 6,6
-                s -3,6 -6,6
-                s -6,-3 -6,-6
-                m 20,0
-                c 0,-4 4,-8 8,-8
-                s 8,4 8,8
-                s -4,8 -8,8
-                s -8,-4 -8,-8
-              `}
-              stroke="url(#borderGradient)"
-              strokeWidth="0.2"
-              fill="none"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              style={{ opacity: borderOpacity }}
-              transition={{
-                duration: 1.5,
-                ease: "easeInOut",
-                delay: 2 + index * 0.2,
-              }}
-            />
-          ))}
-
-          {/* Enhanced gradient definition */}
           <defs>
             <linearGradient
               id="borderGradient"
@@ -156,8 +208,8 @@ const AnimatedBorder: React.FC<AnimatedBorderProps> = ({
         </svg>
       </div>
 
-      {/* Content */}
-      {isClient && children}
+      {/* Content — above the border */}
+      <div className="relative z-[1]">{children}</div>
     </div>
   );
 };
