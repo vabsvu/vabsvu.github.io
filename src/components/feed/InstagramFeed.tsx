@@ -21,11 +21,11 @@ const REDUCED_MOTION =
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// Focal tween ranges: centered slide is full size/sharp/opaque, neighbors
-// recede. Blur is paint-expensive, so the radius stays small.
-const TWEEN_SCALE_RANGE = 0.12; // scale 1 -> 0.88 at the adjacent snap
-const TWEEN_BLUR_MAX = 2.5; // px at the adjacent snap and beyond
-const TWEEN_OPACITY_RANGE = 0.45; // opacity 1 -> 0.55 at the edges
+// Focal tween ranges: centered slide is full size/opaque, neighbors gently
+// recede. Gentle spotlight only — no blur (paint-expensive, and it muddied
+// the photos).
+const TWEEN_SCALE_RANGE = 0.07; // scale 1 -> 0.93 at the adjacent snap
+const TWEEN_OPACITY_RANGE = 0.28; // opacity 1 -> 0.72 at the edges
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -105,18 +105,23 @@ export default function InstagramFeed() {
       loop: true,
       align: "center",
       slidesToScroll: 1,
-      // dragFree momentum felt jerky and never settled on a post —
-      // snap to center instead, with a quick settle.
+      // Snap to center, but let a strong flick carry past several slides
+      // and settle forward at the nearest snap (skipSnaps) instead of
+      // clamping to one slide and yanking back. Longer duration gives a
+      // softer, springier glide.
       dragFree: false,
-      duration: 22,
+      skipSnaps: true,
+      duration: 30,
     },
     plugins,
   );
 
-  // --- Focal tween (scale / blur / opacity by distance from center) ---
+  // --- Focal tween (scale / opacity by distance from center) ---
   // Direct DOM style writes on each slide's inner wrapper; no React state,
   // no re-renders. Pattern follows Embla's official TweenScale example,
-  // including the loop-point correction for wrapped slides.
+  // including the loop-point correction for wrapped slides. The tween runs
+  // over ALL slides on every tick (no slidesInView gating) so slides being
+  // repositioned by the loop never carry a stale style across the seam.
   const tweenNodes = useRef<HTMLElement[]>([]);
   const rafId = useRef(0);
 
@@ -126,20 +131,16 @@ export default function InstagramFeed() {
       .map((slideNode) => slideNode.firstElementChild as HTMLElement);
   }, []);
 
-  const tweenFocal = useCallback((api: EmblaApi, eventName?: string) => {
+  const tweenFocal = useCallback((api: EmblaApi) => {
     const engine = api.internalEngine();
     const scrollProgress = api.scrollProgress();
     const snapList = api.scrollSnapList();
-    const slidesInView = api.slidesInView();
-    const isScrollEvent = eventName === "scroll";
 
     snapList.forEach((scrollSnap, snapIndex) => {
       let diffToTarget = scrollSnap - scrollProgress;
       const slidesInSnap = engine.slideRegistry[snapIndex];
 
       slidesInSnap.forEach((slideIndex) => {
-        if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
-
         // Loop edge case: a looped slide is rendered at a shifted
         // position, so measure its distance against the wrapped
         // progress instead of the raw snap point.
@@ -164,9 +165,7 @@ export default function InstagramFeed() {
         // 0 at the centered snap -> 1 at the adjacent snap (clamped beyond)
         const distance = clamp(Math.abs(diffToTarget) * snapList.length, 0, 1);
         const scale = 1 - TWEEN_SCALE_RANGE * distance;
-        const blur = TWEEN_BLUR_MAX * distance;
         node.style.transform = `scale(${scale.toFixed(4)})`;
-        node.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
         node.style.opacity = (1 - TWEEN_OPACITY_RANGE * distance).toFixed(3);
       });
     });
@@ -179,11 +178,11 @@ export default function InstagramFeed() {
     tweenFocal(emblaApi);
 
     // rAF-throttled: coalesce events that fire faster than frames.
-    const onTween = (api: EmblaApi, eventName: string) => {
+    const onTween = (api: EmblaApi) => {
       if (rafId.current !== 0) return;
       rafId.current = requestAnimationFrame(() => {
         rafId.current = 0;
-        tweenFocal(api, eventName);
+        tweenFocal(api);
       });
     };
     const onReInit = (api: EmblaApi) => {
@@ -261,18 +260,22 @@ export default function InstagramFeed() {
               className="overflow-hidden cursor-grab active:cursor-grabbing"
               ref={emblaRef}
             >
-              <div className="flex gap-6">
+              {/* Embla canonical spacing: gutters live ON the slides
+                  (pl-6) offset by -ml-6 on the container — a CSS gap here
+                  breaks the loop's translation math and makes wrapped
+                  slides visibly jump into place at the seam. */}
+              <div className="flex -ml-6">
                 {posts.map((post) => (
                   <a
                     key={post.id}
                     href={post.permalink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-[0_0_85%] sm:flex-[0_0_46%] lg:flex-[0_0_31%] min-w-0 group hover:scale-[1.02] transition-transform duration-300"
+                    className="flex-[0_0_85%] sm:flex-[0_0_46%] lg:flex-[0_0_31%] min-w-0 pl-6 group hover:scale-[1.02] transition-transform duration-300"
                   >
                     {/* Tween node — the focal effect writes transform /
-                        filter / opacity here directly (no re-renders) */}
-                    <div className="h-full transform-gpu will-change-transform">
+                        opacity here directly (no re-renders) */}
+                    <div className="h-full transform-gpu">
                       <div className="h-full bg-gradient-to-br from-[#992b0d]/10 to-[#e36414]/10 p-4 rounded-xl backdrop-blur-sm">
                         <div
                           className="relative rounded-lg overflow-hidden"

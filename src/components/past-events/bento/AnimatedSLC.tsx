@@ -1,17 +1,19 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
-import { useIsVisible } from "../hooks/useIsVisible";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 export const AnimatedSLC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const isVisible = useIsVisible(ref);
 
+  // Fast entrance (~0.4s settle) — the loose 0.15s stagger + slow spring
+  // were leftovers from the splash-screen era and made the card feel laggy.
   const container = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.06,
         delayChildren: 0,
       },
     },
@@ -24,8 +26,8 @@ export const AnimatedSLC = () => {
       opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 12,
+        stiffness: 260,
+        damping: 24,
       },
     },
   };
@@ -37,7 +39,6 @@ export const AnimatedSLC = () => {
         <motion.div
           initial="hidden"
           animate="show"
-          whileHover="hover"
           variants={container}
           className="h-full w-full relative group rounded-lg"
         >

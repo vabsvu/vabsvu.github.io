@@ -67,6 +67,18 @@ const HennaPatterns = ({ isVisible = true }: { isVisible?: boolean }) => {
       const el = ref.current;
       if (!el) return;
 
+      // prefers-reduced-motion: skip the draw-on choreography and resolve
+      // straight to the fully drawn pattern (GSAP isn't covered by the
+      // framer-motion MotionConfig).
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set(".hr0", { opacity: 0.5 });
+        gsap.set(".hd1", { opacity: 0.4 });
+        gsap.set(".hd2", { opacity: 0.35 });
+        gsap.set(".hf3", { opacity: 1 });
+        gsap.set(".hd5", { opacity: 0.35 });
+        return;
+      }
+
       // Stroke-dash setup for all stroked paths
       el.querySelectorAll(".hs").forEach((e) => {
         const g = e as SVGGeometryElement;
@@ -77,6 +89,9 @@ const HennaPatterns = ({ isVisible = true }: { isVisible?: boolean }) => {
       });
 
       const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+      // Play the whole draw at 2x — keeps the choreography but finishes in
+      // ~1.1s instead of the splash-era ~2.2s.
+      tl.timeScale(2);
 
       // Center dot
       tl.to(".hr0", { opacity: 0.5, duration: 0.3 }, 0);

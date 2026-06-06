@@ -1,11 +1,10 @@
 import React, { Suspense, useRef, useState, useEffect, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import Model from "../../model_components/Thali";
-import { Environment } from "@react-three/drei";
+import Model from "../model/Thali";
 import { motion } from "framer-motion";
-import { ErrorBoundary } from "./ErrorBoundary";
-import { useIsVisible } from "../hooks/useIsVisible";
+import { ErrorBoundary } from "../../ErrorBoundary";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 // Module-level memoized WebGL capability probe. Runs at most once per page
 // load; if the device/browser can't create a context we never mount <Canvas>.
@@ -152,7 +151,10 @@ function Scene() {
           <Model rotation={[0, 0, 0]} material={material} />
         </group>
       </Suspense>
-      <Environment preset="sunset" />
+      {/* No <Environment> here: Thali.tsx already mounts a "studio"
+          environment (which always won the old studio/sunset race anyway).
+          A second preset meant a redundant HDR download that suspended the
+          whole canvas until it resolved. */}
     </>
   );
 }
@@ -167,27 +169,35 @@ function getScaleFactor(width: number) {
 
 export default function AnimatedFood() {
   const canvasHostRef = useRef<HTMLDivElement>(null);
+  // Tight margin drives the frameloop (render only when actually near view).
   const isNearViewport = useIsVisible(canvasHostRef, "250px");
+  // Wide margin drives Canvas mount: start fetching the ~5.3MB GLTF a couple
+  // of viewports early so the model is usually ready by the time it's seen.
+  const isApproaching = useIsVisible(canvasHostRef, "900px");
   const [webglOk] = useState(() => isWebGLSupported());
   const [hasMounted, setHasMounted] = useState(false);
 
-  // Latch: mount the Canvas the first time it nears the viewport, then keep
-  // it mounted (frameloop pauses off-screen instead of unmount thrash).
+  // Latch: mount the Canvas the first time it approaches the viewport, then
+  // keep it mounted (frameloop pauses off-screen instead of unmount thrash).
   useEffect(() => {
-    if (isNearViewport && !hasMounted) {
+    if (isApproaching && !hasMounted) {
       setHasMounted(true);
     }
-  }, [isNearViewport, hasMounted]);
+  }, [isApproaching, hasMounted]);
 
   return (
     <div className="h-full w-full relative">
       {/* Large background gradient */}
       <motion.div
         className="absolute top-[-50%] left-[-50%] right-[-50%] bottom-[-50%] bg-gradient-to-r from-gold/10 via-spanish/20 to-gold/10 rounded-xl blur-lg"
-        animate={{
-          opacity: [0.3, 0.6, 0.3],
-          scale: [1, 1.03, 1],
-        }}
+        animate={
+          isNearViewport
+            ? {
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.03, 1],
+              }
+            : undefined
+        }
         transition={{
           duration: 4,
           repeat: Infinity,
@@ -200,7 +210,7 @@ export default function AnimatedFood() {
         <div className="relative flex flex-col grid-cols-2 justify-center p-4 md:p-6 -translate-y-7 -translate-x-7 overflow-visible">
           {/* Row 1: Delicious */}
           <div className="relative flex overflow-hidden">
-            <div className="animate-marquee whitespace-nowrap py-2">
+            <div className="motion-safe:animate-marquee whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -211,7 +221,7 @@ export default function AnimatedFood() {
                 Delicious • Delicious • Delicious • Delicious •
               </span>
             </div>
-            <div className="absolute top-0 animate-marquee2 whitespace-nowrap py-2">
+            <div className="absolute top-0 motion-safe:animate-marquee2 motion-reduce:hidden whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -225,7 +235,7 @@ export default function AnimatedFood() {
           </div>
 
           <div className="relative flex overflow-hidden">
-            <div className="animate-marqueeReverse whitespace-nowrap py-2">
+            <div className="motion-safe:animate-marqueeReverse whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -236,7 +246,7 @@ export default function AnimatedFood() {
                 South Asian • South Asian • South Asian • South Asian •
               </span>
             </div>
-            <div className="absolute top-0 animate-marqueeReverse2 whitespace-nowrap py-2">
+            <div className="absolute top-0 motion-safe:animate-marqueeReverse2 motion-reduce:hidden whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -250,7 +260,7 @@ export default function AnimatedFood() {
           </div>
           {/* Row 3: Food */}
           <div className="relative flex overflow-hidden">
-            <div className="animate-marquee whitespace-nowrap py-2">
+            <div className="motion-safe:animate-marquee whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -261,7 +271,7 @@ export default function AnimatedFood() {
                 Food • Food • Food • Food •
               </span>
             </div>
-            <div className="absolute top-0 animate-marquee2 whitespace-nowrap py-2">
+            <div className="absolute top-0 motion-safe:animate-marquee2 motion-reduce:hidden whitespace-nowrap py-2">
               <span
                 className="text-4xl md:text-5xl font-marker text-[#ecc078] tracking-wider mx-4"
                 style={{
@@ -310,8 +320,12 @@ export default function AnimatedFood() {
               </Canvas>
             </ErrorBoundary>
           ) : (
-            // Lightweight placeholder until the section nears the viewport.
-            <div className="w-full h-full" aria-hidden="true" />
+            // Subtle pulse skeleton (thali-sized) until the Canvas mounts —
+            // signals "something is coming" instead of dead space.
+            <div
+              className="w-[130px] h-[130px] rounded-full bg-white/5 motion-safe:animate-pulse"
+              aria-hidden="true"
+            />
           )}
         </div>
       </div>

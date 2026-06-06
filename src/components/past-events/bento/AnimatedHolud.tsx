@@ -1,18 +1,20 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import HennaPatterns from "./HennaPatterns";
-import { useIsVisible } from "../hooks/useIsVisible";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 export const AnimatedHolud = () => {
   const ref = useRef<HTMLDivElement>(null);
   const isVisible = useIsVisible(ref);
 
+  // Fast entrance (~0.4s settle) — matches AnimatedSLC; the old 0.15s
+  // stagger + slow spring were splash-screen-era leftovers.
   const container = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.06,
         delayChildren: 0,
       },
     },
@@ -25,8 +27,8 @@ export const AnimatedHolud = () => {
       opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 12,
+        stiffness: 260,
+        damping: 24,
       },
     },
   };

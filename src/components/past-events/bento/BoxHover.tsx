@@ -1,4 +1,3 @@
-// src/components/BoxHover.tsx
 import React, { useRef, useState, useEffect } from "react";
 import {
   motion,

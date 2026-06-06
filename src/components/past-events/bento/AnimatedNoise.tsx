@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { useIsVisible } from "../hooks/useIsVisible";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 export const AnimatedNoise = ({ className = "", intensity = 70 }) => {
   const [pattern, setPattern] = useState("");

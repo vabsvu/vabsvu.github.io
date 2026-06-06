@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useRef } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { BentoBox } from "./AnimatedNoise";
 import { motion } from "framer-motion";
 import { AnimatedSLC } from "./AnimatedSLC";
 import AnimatedFood from "./AnimatedFood";
-import ShiningLakshyaBentoBox from "./lakshya/ShinyLakshyaBentoBox";
+import ShiningLakshyaBentoBox from "./ShinyLakshyaBentoBox";
 import AnimatedHolud from "./AnimatedHolud";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 export function BentoGrid() {
+  const gridRef = useRef<HTMLDivElement>(null);
+  // Pause the ambient blob loops when the grid is off-screen, matching the
+  // site-wide IntersectionObserver gating pattern.
+  const isVisible = useIsVisible(gridRef);
+
   return (
-    <div className="relative  content-start w-full max-w-7xl mx-auto space-y-8 p-4">
+    <div
+      ref={gridRef}
+      className="relative  content-start w-full max-w-7xl mx-auto space-y-8 p-4"
+    >
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-6 auto-rows-[150px] md:auto-rows-[200px] ">
         {/* SLC Ballroom - Now with AnimatedVenue */}
         <BentoBox
@@ -42,12 +51,16 @@ export function BentoGrid() {
           <div className="absolute inset-0 opacity-20 pointer-events-none">
             <motion.div
               className="absolute top-0 left-0 w-40 h-40 bg-[#ecc078] rounded-full blur-3xl"
-              animate={{ x: [-50, 50, -50], y: [-50, 50, -50] }}
+              animate={
+                isVisible ? { x: [-50, 50, -50], y: [-50, 50, -50] } : undefined
+              }
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             ></motion.div>
             <motion.div
               className="absolute bottom-0 right-0 w-40 h-40 bg-[#e2d57e] rounded-full blur-3xl"
-              animate={{ x: [50, -50, 50], y: [50, -50, 50] }}
+              animate={
+                isVisible ? { x: [50, -50, 50], y: [50, -50, 50] } : undefined
+              }
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             ></motion.div>
           </div>
@@ -61,7 +74,9 @@ export function BentoGrid() {
           </div>
 
           {/* Video container with enhanced positioning */}
-          <div className=" relative z-20 h-[calc(100%-5rem)] w-full rounded-lg bg-black/10 backdrop-blur-sm p-2 transform transition-transform duration-500  group-hover:scale-[0.9]">
+          {/* (Removed dead group-hover:scale class — no `group` ancestor
+              exists, so it never fired.) */}
+          <div className="relative z-20 h-[calc(100%-5rem)] w-full rounded-lg bg-black/10 backdrop-blur-sm p-2">
             <VideoPlayer />
           </div>
         </BentoBox>

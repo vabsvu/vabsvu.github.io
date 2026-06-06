@@ -1,7 +1,7 @@
 import React from "react";
 import { MotionConfig } from "framer-motion";
 import { Instagram, ArrowUpRightSquare } from "lucide-react";
-import { BentoGrid } from "../BentoGrid";
+import { BentoGrid } from "./bento/BentoGrid";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const partners = [
@@ -36,7 +36,15 @@ const partners = [
 ];
 
 export default function PastEventShowcase() {
-  const sectionRef = useScrollReveal();
+  // Snappy reveal: trigger as soon as the section nears the viewport and
+  // resolve quickly — the hook's 0.8s/0.15s defaults were tuned for the old
+  // splash-screen era and made this section feel slow to appear.
+  const sectionRef = useScrollReveal({
+    y: 20,
+    duration: 0.4,
+    stagger: 0.08,
+    start: "top 95%",
+  });
 
   return (
     // reducedMotion="user": the legacy bento grid's framer animations respect

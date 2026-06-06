@@ -39,10 +39,14 @@ type GLTFResult = GLTF & {
   };
 };
 
-export default function Thali(
-  material: any,
-  props: JSX.IntrinsicElements["group"],
-) {
+type ThaliProps = JSX.IntrinsicElements["group"] & {
+  material?: THREE.Material;
+};
+
+// Bug fix: this previously declared (material, props) as two positional
+// parameters — React passes a single props object, so `props` was always
+// undefined and the rotation/material props from Scene were silently dropped.
+export default function Thali({ material, ...props }: ThaliProps) {
   const { nodes, materials } = useGLTF(
     "/models/thali/thali.gltf",
   ) as GLTFResult;

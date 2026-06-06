@@ -85,7 +85,26 @@ export default function SiteLayout() {
       </ErrorBoundary>
 
       <ErrorBoundary label="past-event-showcase" fallback={null}>
-        <Suspense fallback={<div className="min-h-[700px] md:min-h-[900px]" />}>
+        <Suspense
+          fallback={
+            // Lightweight on-palette skeleton loosely matching the past-events
+            // bento layout. Same min-h as the section so there is no layout
+            // shift when the real content swaps in.
+            <div
+              aria-hidden="true"
+              className="min-h-[700px] md:min-h-[900px] px-4 py-16 md:py-20"
+            >
+              <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+                <div className="mx-auto h-8 w-56 max-w-full rounded-2xl bg-white/5 motion-safe:animate-pulse" />
+                <div className="h-[150px] md:h-[200px] rounded-2xl bg-white/5 motion-safe:animate-pulse" />
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  <div className="h-[150px] md:h-[200px] rounded-2xl bg-white/5 motion-safe:animate-pulse" />
+                  <div className="h-[150px] md:h-[200px] rounded-2xl bg-white/5 motion-safe:animate-pulse" />
+                </div>
+              </div>
+            </div>
+          }
+        >
           <PastEventShowcase />
         </Suspense>
       </ErrorBoundary>

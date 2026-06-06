@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
-import { BentoBox } from "../AnimatedNoise";
+import { BentoBox } from "./AnimatedNoise";
 import { motion } from "framer-motion";
 import { Lakshya } from "./Lakshya";
-import { useIsVisible } from "../../hooks/useIsVisible";
+import { useIsVisible } from "../../../hooks/useIsVisible";
 
 const ShinyLakshyaBentoBox = () => {
   const ref = useRef<HTMLDivElement>(null);

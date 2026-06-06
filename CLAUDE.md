@@ -57,7 +57,7 @@ App.tsx                     # Last-resort ErrorBoundary (full-page styled fallba
     HeroSection             # Logo, Bengali proverb, next-event CTA from events.json
     EventsCalendar (lazy)   # Partiful-style calendar — src/components/calendar/
     InstagramFeed (lazy)    # Embla carousel fed by posts.json
-    PastEventShowcase (lazy)# Wraps the legacy Mock Shaadi BentoGrid (3D thali, video)
+    PastEventShowcase (lazy)# Legacy Mock Shaadi bento grid — src/components/past-events/
     Footer
 ```
 
@@ -72,6 +72,15 @@ The Mock Shaadi-era shell components (`OpeningSequence`, `OrgShowcase`, `OrgHead
 ### Calendar (src/components/calendar/)
 
 `useCalendar` (month state, selectedDate, event lookups by YYYY-MM-DD string — avoid Date timezone math) → `CalendarGrid`/`CalendarDay` (photo thumbnails with deterministic tilt on event days) → `DayDetailPanel` (chevrons jump to nearest event day across months) → shared `EventCard` → `EventModal`. Date formatting lives in `calendar/formatters.ts`.
+
+### Past events (src/components/past-events/)
+
+The entire legacy Mock Shaadi tree lives here, imported only via `PastEventShowcase.tsx`:
+
+- `bento/` — `BentoGrid` and its cards (`AnimatedSLC`, `AnimatedFood`, `AnimatedHolud`, `ShinyLakshyaBentoBox`/`Lakshya`, `VideoPlayer`/`BoxHover`, `HennaPatterns`, plus the shared `BentoBox` container in `AnimatedNoise.tsx`)
+- `model/Thali.tsx` — the Three.js thali model (loads GLTF/textures from the absolute `/models/thali/` public path)
+
+Component layout rule: feature sections own their folder (`calendar/`, `feed/`, `hero/`, `layout/`, `past-events/`); only truly shared components sit at `src/components/` root (`ErrorBoundary.tsx`, `AnimatedBorder.tsx`).
 
 ### Resilience patterns
 
